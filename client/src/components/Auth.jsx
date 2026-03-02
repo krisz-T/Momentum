@@ -2,16 +2,20 @@ import { useState } from 'react'
 import { supabase } from '../supabaseClient'
 
 export default function Auth() {
+  const [isLogin, setIsLogin] = useState(true)
   const [loading, setLoading] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState(null)
 
-  const handleLogin = async (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault()
     setLoading(true)
     setError(null)
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+
+    const { error } = isLogin
+      ? await supabase.auth.signInWithPassword({ email, password })
+      : await supabase.auth.signUp({ email, password });
 
     if (error) {
       setError(error.message)
@@ -19,15 +23,11 @@ export default function Auth() {
     setLoading(false)
   }
 
-  // In a real app, you'd have a separate Sign Up form.
-  // For now, you can create users directly in the Supabase dashboard's
-  // "Authentication" section to test the login.
-
   return (
     <div className="auth-container">
-      <form onSubmit={handleLogin}>
-        <h1>Momentum Login</h1>
-        <p>Sign in to track your progress</p>
+      <form onSubmit={handleSubmit}>
+        <h1>{isLogin ? 'Momentum Login' : 'Create Account'}</h1>
+        <p>{isLogin ? 'Sign in to track your progress' : 'Get started on your fitness journey'}</p>
         {error && <p style={{ color: '#ff6b6b' }}>{error}</p>}
         <div>
           <label htmlFor="email">Email</label>
@@ -50,9 +50,15 @@ export default function Auth() {
           />
         </div>
         <button type="submit" disabled={loading}>
-          {loading ? 'Signing In...' : 'Sign In'}
+          {loading ? 'Processing...' : (isLogin ? 'Sign In' : 'Sign Up')}
         </button>
       </form>
+      <p className="auth-toggle">
+        {isLogin ? "Don't have an account? " : "Already have an account? "}
+        <button onClick={() => setIsLogin(!isLogin)}>
+          {isLogin ? 'Sign Up' : 'Sign In'}
+        </button>
+      </p>
     </div>
   )
 }

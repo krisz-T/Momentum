@@ -15,6 +15,20 @@
   padding: 2rem;
 }
 
+.auth-toggle {
+  margin-top: 1.5rem;
+  font-size: 0.9em;
+}
+
+.auth-toggle button {
+  background: none;
+  border: none;
+  color: #646cff;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+
 header {
   display: flex;
   justify-content: space-between;
