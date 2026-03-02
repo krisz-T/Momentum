@@ -89,6 +89,25 @@ const ManageWorkoutPage = () => {
     }
   };
 
+  const handleRemoveExercise = async (workoutExerciseId) => {
+    if (!window.confirm('Remove this exercise from the workout?')) return;
+    try {
+      if (!session) throw new Error('Authentication error');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/workout-exercises/${workoutExerciseId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${session.access_token}` },
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to remove exercise');
+      }
+      // Refresh the list of assigned exercises
+      await fetchWorkoutDetails();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
   if (loading) return <p>Loading...</p>;
   if (error) return <p style={{ color: '#ff6b6b' }}>Error: {error}</p>;
 
@@ -102,9 +121,14 @@ const ManageWorkoutPage = () => {
       <div className="admin-section">
         <h2>Assigned Exercises</h2>
         {workout?.workout_exercises.length > 0 ? (
-          <ul>
-            {workout.workout_exercises.map(we => <li key={we.id}>{we.exercises.name} ({we.sets}x{we.reps || `${we.duration_seconds}s`})</li>)}
-          </ul>
+          <div className="manage-plans-list">
+            {workout.workout_exercises.map(we => (
+              <div key={we.id} className="manage-plan-item">
+                <span>{we.exercises.name} ({we.sets}x{we.reps || `${we.duration_seconds}s`})</span>
+                <button onClick={() => handleRemoveExercise(we.id)} className="delete-button-sm">Remove</button>
+              </div>
+            ))}
+          </div>
         ) : <p>No exercises assigned yet.</p>}
       </div>
 
@@ -147,10 +171,10 @@ const ManageWorkoutPage = () => {
       </div>
 
       <Modal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} title="Create New Exercise">
-        <CreateExerciseForm onExerciseCreated={async () => {
+        <CreateExerciseForm onExerciseCreated={async (newExercise) => {
           const exercises = await fetchAllExercises();
           if (exercises && exercises.length > 0) {
-            setSelectedExercise(exercises[exercises.length - 1].id); // Select the newly created exercise
+            setSelectedExercise(newExercise.id); // Auto-select the newly created exercise
           }
           setIsCreateModalOpen(false);
         }} />

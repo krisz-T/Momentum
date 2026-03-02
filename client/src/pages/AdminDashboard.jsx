@@ -62,7 +62,7 @@ const AdminDashboard = () => {
     fetchPlans();
     fetchExercises();
   }, [fetchUsers, fetchPlans, fetchExercises]);
-
+  
   const handleBanUser = async (userId) => {
     if (!window.confirm('Are you sure you want to ban this user?')) return;
 

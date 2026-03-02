@@ -22,14 +22,14 @@ const CreateExerciseForm = ({ onExerciseCreated }) => {
         },
         body: JSON.stringify({ name, description, video_url: videoUrl }),
       });
+      const newExercise = await response.json();
       if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.error || 'Failed to create exercise');
+        throw new Error(newExercise.error || 'Failed to create exercise');
       }
       setName('');
       setDescription('');
       setVideoUrl('');
-      if (onExerciseCreated) onExerciseCreated();
+      if (onExerciseCreated) onExerciseCreated(newExercise);
     } catch (err) {
       setError(err.message);
     } finally {
