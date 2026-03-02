@@ -38,6 +38,18 @@ const CreateExerciseForm = ({ onExerciseCreated }) => {
     }
   };
 
+  const handleUrlChange = (e) => {
+    let value = e.target.value;
+    // If user pastes a full iframe tag, try to extract the src URL
+    if (value.trim().startsWith('<iframe')) {
+      const match = value.match(/src="([^"]+)"/);
+      if (match && match[1]) {
+        value = match[1];
+      }
+    }
+    setVideoUrl(value);
+  };
+
   return (
     <form onSubmit={handleSubmit}>
       <h3>Create New Exercise</h3>
@@ -52,7 +64,7 @@ const CreateExerciseForm = ({ onExerciseCreated }) => {
       </div>
       <div>
         <label>YouTube Embed URL</label>
-        <input type="text" value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} />
+        <input type="text" value={videoUrl} onChange={handleUrlChange} placeholder="Paste the URL from the 'src' attribute" />
       </div>
       <button type="submit" disabled={submitting}>{submitting ? 'Creating...' : 'Create Exercise'}</button>
     </form>
