@@ -64,6 +64,25 @@ app.get('/api/profile', authenticate, async (req, res) => {
   }
 });
 
+// A protected route to UPDATE the current user's profile
+app.patch('/api/profile', authenticate, async (req, res) => {
+  try {
+    const { name } = req.body;
+    if (!name) return res.status(400).json({ error: 'Name is required.' });
+
+    const { data, error } = await supabase.from('users').update({ name }).eq('id', req.user.id).select().single();
+    if (error) throw error;
+
+    res.json(data);
+  } catch (error) {
+    if (error.code === '23505') { // Postgres code for unique violation
+      return res.status(409).json({ error: 'This username is already taken. Please choose another.' });
+    }
+    console.error('Error updating profile:', error.message);
+    res.status(500).json({ error: 'Failed to update profile.' });
+  }
+});
+
 // A protected route to get the user's current plan enrollments
 app.get('/api/profile/enrollments', authenticate, async (req, res) => {
   try {
@@ -211,6 +230,17 @@ app.post('/api/exercises', authenticate, isAdmin, async (req, res) => {
   }
 });
 
+// Admin-only route to get all exercises from the library
+app.get('/api/exercises', authenticate, isAdmin, async (req, res) => {
+  try {
+    const { data, error } = await supabase.from('exercises').select('id, name');
+    if (error) throw error;
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch exercises.' });
+  }
+});
+
 // Admin-only route to get details for a single exercise
 app.get('/api/exercises/:id', authenticate, isAdmin, async (req, res) => {
   try {
@@ -279,17 +309,6 @@ app.post('/api/plans/:planId/workouts', authenticate, isAdmin, async (req, res) 
     res.status(201).json(data);
   } catch (error) {
     res.status(500).json({ error: 'Failed to add workout to plan.' });
-  }
-});
-
-// Admin-only route to get all exercises from the library
-app.get('/api/exercises', authenticate, isAdmin, async (req, res) => {
-  try {
-    const { data, error } = await supabase.from('exercises').select('id, name');
-    if (error) throw error;
-    res.json(data);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch exercises.' });
   }
 });
 
@@ -435,28 +454,10 @@ app.post('/api/workouts', authenticate, async (req, res) => {
 
       console.log(`User ${userId} has ${count} total workouts.`);
 
-      // If this is the user's first workout, award the badge
-      if (count === 1) {
-        console.log(`Attempting to award 'First Workout' badge...`);
-        await supabase.from('badges').insert({
-          user_id: userId,
-          badge_name: 'First Workout',
-        });
-        console.log(`Successfully awarded 'First Workout' badge to user ${userId}`);
-      }
-
-      // If this is the user's fifth workout, award a new badge
-      if (count === 5) {
-        console.log(`Attempting to award '5-Workout Mark' badge...`);
-        await supabase.from('badges').insert({
-          user_id: userId,
-          badge_name: '5-Workout Mark',
-        });
-        console.log(`Successfully awarded '5-Workout Mark' badge to user ${userId}`);
-      }
-
       // Check for 10, 50, 100, etc.
       const milestoneBadges = {
+        1: 'First Workout',
+        5: '5-Workout Mark',
         10: '10 Workouts',
         50: '50 Workouts',
         100: '100 Workouts Club',

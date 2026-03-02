@@ -30,7 +30,6 @@ const CreatePlanForm = ({ onPlanCreated }) => {
         const errData = await response.json();
         throw new Error(errData.error || 'Failed to create plan');
       }
-      alert('Plan created successfully!');
       setTitle('');
       setDescription('');
       setDurationWeeks('');

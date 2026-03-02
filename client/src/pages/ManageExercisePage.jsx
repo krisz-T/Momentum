@@ -57,7 +57,6 @@ const ManageExercisePage = () => {
         const errData = await response.json();
         throw new Error(errData.error || 'Failed to update exercise');
       }
-      alert('Exercise updated successfully!');
       navigate('/admin');
     } catch (err) {
       setError(err.message);

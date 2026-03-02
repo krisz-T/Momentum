@@ -4,67 +4,79 @@ import { supabase } from '../supabaseClient';
 import { useAuth } from '../contexts/AuthContext';
 
 const MyProfile = () => {
-  const { userProfile, session } = useAuth();
+  const { userProfile, session, fetchProfile } = useAuth();
   const [badges, setBadges] = useState([]);
   const [enrollments, setEnrollments] = useState([]);
   const [workouts, setWorkouts] = useState([]);
-  const [loadingBadges, setLoadingBadges] = useState(true);
-  const [loadingEnrollments, setLoadingEnrollments] = useState(true);
-  const [loadingWorkouts, setLoadingWorkouts] = useState(true);
+  const [loading, setLoading] = useState(true);
+
+  // State for editing username
+  const [isEditing, setIsEditing] = useState(false);
+  const [newName, setNewName] = useState('');
+  const [updateError, setUpdateError] = useState(null);
+
 
   useEffect(() => {
-    // Fetch badges and enrollments only when the user profile is available
-    if (userProfile && session) {
-      const fetchBadges = async () => {
-        try {
-          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/profile/badges`, {
-            headers: { 'Authorization': `Bearer ${session.access_token}` },
-          });
-          const data = await response.json();
-          setBadges(data);
-        } catch (error) {
-          console.error('Failed to fetch badges:', error);
-        } finally {
-          setLoadingBadges(false);
-        }
-      };
-      fetchBadges();
-    }
+    const fetchProfileData = async () => {
+      if (!session) return;
+      setLoading(true);
 
-    if (session) {
-      const fetchEnrollments = async () => {
-        try {
-          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/profile/enrollments`, {
-            headers: { 'Authorization': `Bearer ${session.access_token}` },
-          });
-          const data = await response.json();
-          setEnrollments(data);
-        } catch (error) {
-          console.error('Failed to fetch enrollments:', error);
-        } finally {
-          setLoadingEnrollments(false);
-        }
-      };
-      fetchEnrollments();
-    }
+      const headers = { 'Authorization': `Bearer ${session.access_token}` };
+      const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
-    if (session) {
-      const fetchWorkouts = async () => {
-        try {
-          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/profile/workouts`, {
-            headers: { 'Authorization': `Bearer ${session.access_token}` },
-          });
-          const data = await response.json();
-          setWorkouts(data);
-        } catch (error) {
-          console.error('Failed to fetch workout history:', error);
-        } finally {
-          setLoadingWorkouts(false);
-        }
-      };
-      fetchWorkouts();
+      try {
+        const [badgesRes, enrollmentsRes, workoutsRes] = await Promise.all([
+          fetch(`${baseUrl}/api/profile/badges`, { headers }),
+          fetch(`${baseUrl}/api/profile/enrollments`, { headers }),
+          fetch(`${baseUrl}/api/profile/workouts`, { headers }),
+        ]);
+
+        const badgesData = await badgesRes.json();
+        const enrollmentsData = await enrollmentsRes.json();
+        const workoutsData = await workoutsRes.json();
+
+        setBadges(badgesData);
+        setEnrollments(enrollmentsData);
+        setWorkouts(workoutsData);
+      } catch (error) {
+        console.error("Failed to fetch profile data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfileData();
+  }, [session]);
+
+  useEffect(() => {
+    if (userProfile) {
+      setNewName(userProfile.name);
     }
-  }, [userProfile, session]);
+  }, [userProfile]);
+
+  const handleUpdateName = async (e) => {
+    e.preventDefault();
+    setUpdateError(null);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/profile`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ name: newName }),
+      });
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.error || 'Failed to update name');
+      }
+      // Refresh the profile in the global context
+      await fetchProfile(session);
+      setIsEditing(false);
+    } catch (err) {
+      setUpdateError(err.message);
+    }
+  };
 
   if (!userProfile) {
     return <div>Loading profile...</div>;
@@ -78,14 +90,26 @@ const MyProfile = () => {
       </div>
 
       <div className="profile-details">
-        <h2>{userProfile.name}</h2>
+        {isEditing ? (
+          <form onSubmit={handleUpdateName} className="inline-form">
+            <input type="text" value={newName} onChange={(e) => setNewName(e.target.value)} required />
+            <button type="submit">Save</button>
+            <button type="button" onClick={() => setIsEditing(false)}>Cancel</button>
+            {updateError && <p style={{ color: '#ff6b6b' }}>{updateError}</p>}
+          </form>
+        ) : (
+          <div className="profile-header">
+            <h2>{userProfile.name}</h2>
+            <button onClick={() => setIsEditing(true)}>Edit Name</button>
+          </div>
+        )}
         <p>Role: {userProfile.role}</p>
         <h3>Total XP: {userProfile.total_xp}</h3>
       </div>
 
       <div className="admin-section">
         <h3>My Active Plans</h3>
-        {loadingEnrollments ? (
+        {loading ? (
           <p>Loading plans...</p>
         ) : enrollments.length > 0 ? (
           <div className="plans-list">
@@ -101,7 +125,7 @@ const MyProfile = () => {
 
       <div className="admin-section">
         <h3>Recent Workouts</h3>
-        {loadingWorkouts ? (
+        {loading ? (
           <p>Loading history...</p>
         ) : workouts.length > 0 ? (
           <table>
@@ -127,7 +151,7 @@ const MyProfile = () => {
 
       <div className="badges-section">
         <h3>My Badges</h3>
-        {loadingBadges ? (
+        {loading ? (
           <p>Loading badges...</p>
         ) : badges.length > 0 ? (
           <ul className="badge-list">

@@ -48,7 +48,7 @@ export const AuthProvider = ({ children }) => {
     return () => subscription.unsubscribe();
   }, [fetchProfile]);
 
-  const value = { session, userProfile, loading };
+  const value = { session, userProfile, loading, fetchProfile };
 
   return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
 };
