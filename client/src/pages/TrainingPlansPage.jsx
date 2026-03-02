@@ -38,7 +38,9 @@ const TrainingPlansPage = () => {
           <div key={plan.id} className="plan-card">
             <h2>{plan.title}</h2>
             <p>{plan.description}</p>
-            <span>{plan.duration_weeks} weeks</span>
+            <span>
+              {plan.duration_weeks ? `${plan.duration_weeks} weeks` : 'Ongoing'}
+            </span>
             <Link to={`/plans/${plan.id}`} className="button-link">
               View Plan
             </Link>

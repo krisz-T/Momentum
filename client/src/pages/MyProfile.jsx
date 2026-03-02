@@ -6,10 +6,12 @@ import { useAuth } from '../contexts/AuthContext';
 const MyProfile = () => {
   const { userProfile, session } = useAuth();
   const [badges, setBadges] = useState([]);
+  const [enrollments, setEnrollments] = useState([]);
   const [loadingBadges, setLoadingBadges] = useState(true);
+  const [loadingEnrollments, setLoadingEnrollments] = useState(true);
 
   useEffect(() => {
-    // Fetch badges only when the user profile is available
+    // Fetch badges and enrollments only when the user profile is available
     if (userProfile && session) {
       const fetchBadges = async () => {
         try {
@@ -25,6 +27,23 @@ const MyProfile = () => {
         }
       };
       fetchBadges();
+    }
+
+    if (session) {
+      const fetchEnrollments = async () => {
+        try {
+          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/profile/enrollments`, {
+            headers: { 'Authorization': `Bearer ${session.access_token}` },
+          });
+          const data = await response.json();
+          setEnrollments(data);
+        } catch (error) {
+          console.error('Failed to fetch enrollments:', error);
+        } finally {
+          setLoadingEnrollments(false);
+        }
+      };
+      fetchEnrollments();
     }
   }, [userProfile, session]);
 
@@ -45,7 +64,22 @@ const MyProfile = () => {
         <h3>Total XP: {userProfile.total_xp}</h3>
       </div>
 
-      {/* This is where we will display badges later */}
+      <div className="admin-section">
+        <h3>My Active Plans</h3>
+        {loadingEnrollments ? (
+          <p>Loading plans...</p>
+        ) : enrollments.length > 0 ? (
+          <div className="plans-list">
+            {enrollments.map(enrollment => (
+              <div key={enrollment.id} className="plan-card">
+                <h2>{enrollment.training_plans.title}</h2>
+                <Link to={`/plans/${enrollment.plan_id}`} className="button-link">Continue Plan</Link>
+              </div>
+            ))}
+          </div>
+        ) : <p>You are not enrolled in any active plans.</p>}
+      </div>
+
       <div className="badges-section">
         <h3>My Badges</h3>
         {loadingBadges ? (

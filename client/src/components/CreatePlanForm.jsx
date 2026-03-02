@@ -5,7 +5,7 @@ const CreatePlanForm = ({ onPlanCreated }) => {
   const { session } = useAuth();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [durationWeeks, setDurationWeeks] = useState(4);
+  const [durationWeeks, setDurationWeeks] = useState(''); // Default to empty for optional input
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -20,7 +20,11 @@ const CreatePlanForm = ({ onPlanCreated }) => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ title, description, duration_weeks: Number(durationWeeks) }),
+        body: JSON.stringify({
+          title,
+          description,
+          duration_weeks: durationWeeks ? Number(durationWeeks) : null // Send null if empty
+        }),
       });
       if (!response.ok) {
         const errData = await response.json();
@@ -29,7 +33,7 @@ const CreatePlanForm = ({ onPlanCreated }) => {
       alert('Plan created successfully!');
       setTitle('');
       setDescription('');
-      setDurationWeeks(4);
+      setDurationWeeks('');
       if (onPlanCreated) onPlanCreated();
     } catch (err) {
       setError(err.message);
@@ -52,7 +56,7 @@ const CreatePlanForm = ({ onPlanCreated }) => {
       </div>
       <div>
         <label>Duration (weeks)</label>
-        <input type="number" value={durationWeeks} onChange={(e) => setDurationWeeks(e.target.value)} required min="1" />
+        <input type="number" value={durationWeeks} onChange={(e) => setDurationWeeks(e.target.value)} placeholder="Leave blank for ongoing" min="1" />
       </div>
       <button type="submit" disabled={submitting}>{submitting ? 'Creating...' : 'Create Plan'}</button>
     </form>

@@ -69,7 +69,7 @@ app.get('/api/profile/enrollments', authenticate, async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('user_plan_enrollments')
-      .select('plan_id')
+      .select('*, training_plans(title, description)') // Fetch plan details along with enrollment
       .eq('user_id', req.user.id)
       .eq('status', 'active');
 
@@ -210,7 +210,7 @@ app.patch('/api/exercises/:id', authenticate, isAdmin, async (req, res) => {
 app.post('/api/plans', authenticate, isAdmin, async (req, res) => {
   try {
     const { title, description, duration_weeks } = req.body;
-    if (!title || !duration_weeks) return res.status(400).json({ error: 'Title and duration are required.' });
+    if (!title) return res.status(400).json({ error: 'Title is required.' });
 
     const { data, error } = await supabase.from('training_plans').insert({ title, description, duration_weeks }).select().single();
     if (error) throw error;

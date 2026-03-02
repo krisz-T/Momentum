@@ -216,7 +216,7 @@ const AdminDashboard = () => {
                 </div>
               ))}
             </div>
-            <CreateExerciseForm onExerciseCreated={fetchExercises} />
+            <CreateExerciseForm onExerciseCreated={() => { fetchExercises(); }} />
           </div>
           <div>
             <h3>Existing Plans</h3>
@@ -229,7 +229,7 @@ const AdminDashboard = () => {
                 </div>
               ))}
             </div>
-            <CreatePlanForm onPlanCreated={fetchPlans} />
+            <CreatePlanForm onPlanCreated={() => { fetchPlans(); }} />
           </div>
         </div>
       </div>
