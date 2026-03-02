@@ -5,7 +5,8 @@ const { createClient } = require('@supabase/supabase-js');
 const cors = require('cors');
 
 const app = express();
-const port = 3001; // Using a port other than the React default
+// Render provides a PORT environment variable. Use it, or default to 3001 for local dev.
+const port = process.env.PORT || 3001;
 
 // Middleware to parse JSON bodies. This is crucial for POST/PUT requests.
 app.use(express.json());
@@ -83,5 +84,5 @@ app.post('/api/workouts', async (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`✅ Server is running at http://localhost:${port}`);
+  console.log(`✅ Server is running on port ${port}`);
 });
