@@ -297,6 +297,77 @@ app.post('/api/plan-workouts/:workoutId/exercises', authenticate, isAdmin, async
   }
 });
 
+// This should be a protected admin route
+app.get('/api/users', authenticate, isAdmin, async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select('id, name, is_banned');
+
+    if (error) throw error;
+
+    res.json(data);
+  } catch (error) {
+    console.error('Error fetching users:', error.message);
+    res.status(500).json({ error: 'Failed to fetch users' });
+  }
+});
+
+// Admin-only route to get all exercises from the library
+app.get('/api/exercises', authenticate, isAdmin, async (req, res) => {
+  try {
+    const { data, error } = await supabase.from('exercises').select('id, name');
+    if (error) throw error;
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch exercises.' });
+  }
+});
+
+// Admin-only route to get details for a single exercise
+app.get('/api/exercises/:id', authenticate, isAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { data, error } = await supabase.from('exercises').select('*').eq('id', id).single();
+    if (error) throw error;
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch exercise details.' });
+  }
+});
+
+// Admin-only route to update an exercise
+app.patch('/api/exercises/:id', authenticate, isAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, description, video_url } = req.body;
+    if (!name) return res.status(400).json({ error: 'Exercise name is required.' });
+
+    const { data, error } = await supabase.from('exercises').update({ name, description, video_url }).eq('id', id).select().single();
+
+    if (error) throw error;
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update exercise.' });
+  }
+});
+
+// Admin-only route to get details for a single scheduled workout
+app.get('/api/plan-workouts/:id', authenticate, isAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { data, error } = await supabase
+      .from('plan_workouts')
+      .select('*, workout_exercises(*, exercises(name))')
+      .eq('id', id)
+      .single();
+    if (error) throw error;
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch workout details.' });
+  }
+});
+
 app.post('/api/workouts', authenticate, async (req, res) => {
   try {
     const { type, duration } = req.body;
@@ -408,6 +479,19 @@ app.delete('/api/plans/:id', authenticate, isAdmin, async (req, res) => {
     res.status(204).send();
   } catch (error) {
     res.status(500).json({ error: 'Failed to delete training plan.' });
+  }
+});
+
+// Admin-only route to DELETE a scheduled workout from a plan
+app.delete('/api/plan-workouts/:id', authenticate, isAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    // ON DELETE CASCADE will handle associated workout_exercises
+    const { error } = await supabase.from('plan_workouts').delete().eq('id', id);
+    if (error) throw error;
+    res.status(204).send();
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete scheduled workout.' });
   }
 });
 

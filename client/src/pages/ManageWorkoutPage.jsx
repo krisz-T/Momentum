@@ -36,27 +36,32 @@ const ManageWorkoutPage = () => {
     }
   }, [workoutId, session]);
 
+  const fetchAllExercises = useCallback(async () => {
+    if (!session) return [];
+    try {
+      const exercisesResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/exercises`, {
+        headers: { 'Authorization': `Bearer ${session.access_token}` },
+      });
+      const exercisesData = await exercisesResponse.json();
+      setAllExercises(exercisesData);
+      return exercisesData;
+    } catch (err) {
+      setError(err.message);
+      return [];
+    }
+  }, [session]);
+
   useEffect(() => {
     const fetchInitialData = async () => {
-      if (!session) return;
       setLoading(true);
-      await fetchWorkoutDetails();
-      try {
-        const exercisesResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/exercises`, {
-          headers: { 'Authorization': `Bearer ${session.access_token}` },
-        });
-        const exercisesData = await exercisesResponse.json();
-        setAllExercises(exercisesData);
-        if (exercisesData.length > 0) {
-          setSelectedExercise(exercisesData[0].id);
-        }
-      } catch (err) {
-        setError(err.message);
+      const [_, exercisesData] = await Promise.all([fetchWorkoutDetails(), fetchAllExercises()]);
+      if (exercisesData && exercisesData.length > 0) {
+        setSelectedExercise(exercisesData[0].id);
       }
       setLoading(false);
     };
-    fetchInitialData();
-  }, [session, fetchWorkoutDetails]);
+    if (session) fetchInitialData();
+  }, [session, fetchWorkoutDetails, fetchAllExercises]);
 
   const handleAddExercise = async (e) => {
     e.preventDefault();
@@ -172,8 +177,8 @@ const ManageWorkoutPage = () => {
 
       <Modal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} title="Create New Exercise">
         <CreateExerciseForm onExerciseCreated={async (newExercise) => {
-          const exercises = await fetchAllExercises();
-          if (exercises && exercises.length > 0) {
+          await fetchAllExercises();
+          if (newExercise) {
             setSelectedExercise(newExercise.id); // Auto-select the newly created exercise
           }
           setIsCreateModalOpen(false);
