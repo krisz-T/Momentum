@@ -10,6 +10,17 @@ const MyProfile = () => {
   const [workouts, setWorkouts] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const badgeDescriptions = {
+    'First Workout': 'Awarded for logging your very first workout.',
+    '5-Workout Mark': 'Awarded for completing 5 workouts.',
+    '10 Workouts': 'Awarded for completing 10 workouts.',
+    '50 Workouts': 'Awarded for completing 50 workouts.',
+    '100 Workouts Club': 'Awarded for completing 100 workouts.',
+    '500 Workouts!': 'Awarded for completing 500 workouts!',
+    '1000 Workout Legend': 'Awarded for completing 1000 workouts.',
+    'Plan Starter': 'Awarded for enrolling in your first training plan.',
+  };
+
   // State for editing username
   const [isEditing, setIsEditing] = useState(false);
   const [newName, setNewName] = useState('');
@@ -156,7 +167,9 @@ const MyProfile = () => {
         ) : badges.length > 0 ? (
           <ul className="badge-list">
             {badges.map((badge) => (
-              <li key={badge.badge_name} className="badge">{badge.badge_name}</li>
+              <li key={badge.badge_name} className="badge" title={badgeDescriptions[badge.badge_name] || 'An awesome achievement!'}>
+                {badge.badge_name}
+              </li>
             ))}
           </ul>
         ) : (

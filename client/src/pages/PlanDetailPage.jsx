@@ -69,11 +69,12 @@ const PlanDetailPage = () => {
 
   return (
     <div>
-      <nav>
-        <Link to="/plans">Back to All Plans</Link>
-      </nav>
-      <h1>{plan.title}</h1>
-      <p>{plan.description}</p>
+      <div className="page-header">
+        <h1>{plan.title}</h1>
+        <nav><Link to="/plans">Back to All Plans</Link></nav>
+      </div>
+
+      <p className="page-description">{plan.description}</p>
       {isEnrolled ? (
         <p className="enrolled-message">✅ You are enrolled in this plan.</p>
       ) : (
@@ -92,7 +93,7 @@ const PlanDetailPage = () => {
               {workout.workout_exercises.map(exerciseDetail => (
                 <li key={exerciseDetail.id}>
                   <strong>{exerciseDetail.exercises.name}:</strong>
-                  <span>
+                  <span className="exercise-details">
                     {exerciseDetail.sets} sets of {exerciseDetail.reps || `${exerciseDetail.duration_seconds} seconds`}
                   </span>
                 </li>

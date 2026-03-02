@@ -48,7 +48,7 @@ export default function Auth() {
     <div className="auth-container">
       <form onSubmit={handleSubmit}>
         <h1>
-          {view === 'signIn' && 'Momentum Login'}
+          {view === 'signIn' && 'Sign In'}
           {view === 'signUp' && 'Create Account'}
           {view === 'forgotPassword' && 'Reset Password'}
         </h1>

@@ -7,6 +7,7 @@ export const AuthProvider = ({ children }) => {
   const [session, setSession] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
 
   const fetchProfile = useCallback(async (session) => {
     if (!session) {
@@ -39,16 +40,25 @@ export const AuthProvider = ({ children }) => {
 
     getInitialSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session);
       await fetchProfile(session);
       setLoading(false);
+
+      if (event === 'PASSWORD_RECOVERY') {
+        setIsPasswordRecovery(true);
+      } else if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+        setIsPasswordRecovery(false);
+      }
     });
 
     return () => subscription.unsubscribe();
   }, [fetchProfile]);
 
-  const value = { session, userProfile, loading, fetchProfile };
+  // Expose a function to allow child components to reset the recovery state
+  const onPasswordUpdated = () => setIsPasswordRecovery(false);
+
+  const value = { session, userProfile, loading, fetchProfile, isPasswordRecovery, onPasswordUpdated };
 
   return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
 };

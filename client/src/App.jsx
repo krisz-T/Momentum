@@ -17,24 +17,17 @@ import Header from './components/Header';
 import { useAuth } from './contexts/AuthContext';
 
 function App() {
-  const { session } = useAuth();
-  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
-
-  useEffect(() => {
-    // This effect now only handles the special case for password recovery UI.
-    // All other auth logic is in AuthContext.
-    const urlHash = window.location.hash;
-    if (urlHash.includes('type=recovery')) {
-      setIsPasswordRecovery(true);
-    }
-  }, []);
+  const { session, isPasswordRecovery, onPasswordUpdated } = useAuth();
 
   return (
     <div className="container">
       {isPasswordRecovery ? (
-        <ResetPassword onPasswordUpdated={() => setIsPasswordRecovery(false)} />
+        <ResetPassword onPasswordUpdated={onPasswordUpdated} />
       ) : !session ? (
-        <Auth />
+        <div className="auth-page-wrapper">
+          <h1 className="brand-title">Momentum</h1>
+          <Auth />
+        </div>
       ) : (
         <div>
           <Header />
