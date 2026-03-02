@@ -78,7 +78,7 @@ const ActiveWorkoutPage = () => {
         <h3>{currentExercise?.exercises.name || 'Finished!'}</h3>
         {currentExercise && (
           <p className="sets-reps">
-            {currentExercise.sets} sets of {currentExercise.reps} reps
+            {currentExercise.sets} sets of {currentExercise.reps || `${currentExercise.duration_seconds} seconds`}
           </p>
         )}
         {currentExercise?.exercises.video_url && (

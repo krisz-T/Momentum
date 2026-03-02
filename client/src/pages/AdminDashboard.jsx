@@ -8,6 +8,7 @@ const AdminDashboard = () => {
   const { session } = useAuth();
   const [users, setUsers] = useState([]);
   const [plans, setPlans] = useState([]);
+  const [exercises, setExercises] = useState([]);
   const [error, setError] = useState(null);
 
   const fetchPlans = useCallback(async () => {
@@ -21,6 +22,20 @@ const AdminDashboard = () => {
       console.error(err.message);
     }
   }, []);
+
+  const fetchExercises = useCallback(async () => {
+    if (!session) return;
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/exercises`, {
+        headers: { 'Authorization': `Bearer ${session.access_token}` },
+      });
+      if (!response.ok) throw new Error('Failed to fetch exercises');
+      const data = await response.json();
+      setExercises(data);
+    } catch (err) {
+      console.error(err.message);
+    }
+  }, [session]);
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -42,6 +57,7 @@ const AdminDashboard = () => {
   useEffect(() => {
     fetchUsers();
     fetchPlans();
+    fetchExercises();
   }, [fetchUsers]);
 
   const handleBanUser = async (userId) => {
@@ -94,6 +110,62 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleDeleteUser = async (userId) => {
+    if (!window.confirm('PERMANENTLY DELETE this user and all their data? This cannot be undone.')) return;
+    try {
+      if (!session) throw new Error('Authentication error');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/${userId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${session.access_token}` },
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete user');
+      }
+      fetchUsers(); // Refresh list
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleDeletePlan = async (planId) => {
+    if (!window.confirm('PERMANENTLY DELETE this plan and all its scheduled workouts?')) return;
+    try {
+      if (!session) throw new Error('Authentication error');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/plans/${planId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${session.access_token}` },
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete plan');
+      }
+      fetchPlans(); // Refresh list
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleDeleteExercise = async (exerciseId) => {
+    if (!window.confirm('PERMANENTLY DELETE this exercise from the library? This may fail if it is currently in use.')) return;
+    try {
+      if (!session) throw new Error('Authentication error');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/exercises/${exerciseId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${session.access_token}` },
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete exercise');
+      }
+      fetchExercises(); // Refresh list
+    } catch (err) {
+      // Display API-provided error message (e.g., "Cannot delete because it is in use")
+      alert(err.message);
+      setError(err.message);
+    }
+  };
+
   return (
     <div>
       <h1>Admin Dashboard</h1>
@@ -123,6 +195,7 @@ const AdminDashboard = () => {
                   ) : (
                     <button onClick={() => handleBanUser(user.id)}>Ban</button>
                   )}
+                  <button onClick={() => handleDeleteUser(user.id)} className="delete-button">Delete</button>
                 </td>
               </tr>
             ))}
@@ -132,13 +205,26 @@ const AdminDashboard = () => {
       <div className="admin-section">
         <h2>Content Management</h2>
         <div className="admin-forms-container">
-          <CreateExerciseForm />
+          <div>
+            <h3>Existing Exercises</h3>
+            <div className="manage-plans-list">
+              {exercises.map(ex => (
+                <div key={ex.id} className="manage-plan-item">
+                  <span>{ex.name}</span>
+                  <button onClick={() => handleDeleteExercise(ex.id)} className="delete-button-sm">X</button>
+                  <Link to={`/admin/exercises/${ex.id}`} className="button-link">Manage</Link>
+                </div>
+              ))}
+            </div>
+            <CreateExerciseForm onExerciseCreated={fetchExercises} />
+          </div>
           <div>
             <h3>Existing Plans</h3>
             <div className="manage-plans-list">
               {plans.map(plan => (
                 <div key={plan.id} className="manage-plan-item">
                   <span>{plan.title}</span>
+                  <button onClick={() => handleDeletePlan(plan.id)} className="delete-button-sm">X</button>
                   <Link to={`/admin/plans/${plan.id}`} className="button-link">Manage</Link>
                 </div>
               ))}

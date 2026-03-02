@@ -313,3 +313,24 @@ hr {
   padding: 1rem;
   border-radius: 8px;
 }
+
+.radio-group {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.delete-button {
+  background-color: #8c3a3a;
+  border-color: #8c3a3a;
+  margin-left: 0.5rem;
+}
+
+.delete-button-sm {
+  background-color: #5c2e2e;
+  border-color: #5c2e2e;
+  padding: 0.2em 0.6em;
+  font-size: 0.9em;
+  margin-left: auto;
+  margin-right: 1rem;
+}

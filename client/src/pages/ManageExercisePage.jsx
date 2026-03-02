@@ -1,0 +1,97 @@
+import { useState, useEffect, useCallback } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+
+const ManageExercisePage = () => {
+  const { id: exerciseId } = useParams();
+  const navigate = useNavigate();
+  const { session } = useAuth();
+  const [exercise, setExercise] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Form state
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [videoUrl, setVideoUrl] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const fetchExerciseDetails = useCallback(async () => {
+    if (!session) return;
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/exercises/${exerciseId}`, {
+        headers: { 'Authorization': `Bearer ${session.access_token}` },
+      });
+      if (!response.ok) throw new Error('Failed to fetch exercise details');
+      const data = await response.json();
+      setExercise(data);
+      // Pre-fill form
+      setName(data.name);
+      setDescription(data.description || '');
+      setVideoUrl(data.video_url || '');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [exerciseId, session]);
+
+  useEffect(() => {
+    fetchExerciseDetails();
+  }, [fetchExerciseDetails]);
+
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setError(null);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/exercises/${exerciseId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ name, description, video_url: videoUrl }),
+      });
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.error || 'Failed to update exercise');
+      }
+      alert('Exercise updated successfully!');
+      navigate('/admin');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (loading) return <p>Loading exercise...</p>;
+  if (error) return <p style={{ color: '#ff6b6b' }}>Error: {error}</p>;
+
+  return (
+    <div>
+      <nav><Link to="/admin">Back to Admin Dashboard</Link></nav>
+      <h1>Editing: {exercise?.name}</h1>
+      <form onSubmit={handleUpdate}>
+        <h3>Update Exercise Details</h3>
+        {error && <p style={{ color: '#ff6b6b' }}>{error}</p>}
+        <div>
+          <label>Exercise Name</label>
+          <input type="text" value={name} onChange={(e) => setName(e.target.value)} required />
+        </div>
+        <div>
+          <label>Description</label>
+          <textarea value={description} onChange={(e) => setDescription(e.target.value)} />
+        </div>
+        <div>
+          <label>YouTube Embed URL</label>
+          <input type="text" value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} />
+        </div>
+        <button type="submit" disabled={submitting}>{submitting ? 'Updating...' : 'Update Exercise'}</button>
+      </form>
+    </div>
+  );
+};
+
+export default ManageExercisePage;

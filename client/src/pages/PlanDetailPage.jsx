@@ -93,7 +93,7 @@ const PlanDetailPage = () => {
                 <li key={exerciseDetail.id}>
                   <strong>{exerciseDetail.exercises.name}:</strong>
                   <span>
-                    {exerciseDetail.sets} sets of {exerciseDetail.reps} reps
+                    {exerciseDetail.sets} sets of {exerciseDetail.reps || `${exerciseDetail.duration_seconds} seconds`}
                   </span>
                 </li>
               ))}

@@ -13,8 +13,10 @@ const ManageWorkoutPage = () => {
 
   // Form state
   const [selectedExercise, setSelectedExercise] = useState('');
+  const [unit, setUnit] = useState('reps'); // 'reps' or 'time'
   const [sets, setSets] = useState(3);
   const [reps, setReps] = useState('8-12');
+  const [duration, setDuration] = useState(60);
   const [submitting, setSubmitting] = useState(false);
 
   const fetchWorkoutDetails = useCallback(async () => {
@@ -58,13 +60,19 @@ const ManageWorkoutPage = () => {
     setSubmitting(true);
     setError(null);
     try {
+      const payload = {
+        exercise_id: selectedExercise,
+        sets,
+        ...(unit === 'reps' ? { reps } : { duration_seconds: duration }),
+      };
+
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/plan-workouts/${workoutId}/exercises`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ exercise_id: selectedExercise, sets, reps }),
+        body: JSON.stringify(payload),
       });
       if (!response.ok) {
         const errData = await response.json();
@@ -90,7 +98,7 @@ const ManageWorkoutPage = () => {
         <h2>Assigned Exercises</h2>
         {workout?.workout_exercises.length > 0 ? (
           <ul>
-            {workout.workout_exercises.map(we => <li key={we.id}>{we.exercises.name} ({we.sets}x{we.reps})</li>)}
+            {workout.workout_exercises.map(we => <li key={we.id}>{we.exercises.name} ({we.sets}x{we.reps || `${we.duration_seconds}s`})</li>)}
           </ul>
         ) : <p>No exercises assigned yet.</p>}
       </div>
@@ -105,13 +113,27 @@ const ManageWorkoutPage = () => {
             </select>
           </div>
           <div>
+            <label>Unit</label>
+            <div className="radio-group">
+              <label><input type="radio" value="reps" checked={unit === 'reps'} onChange={() => setUnit('reps')} /> Reps</label>
+              <label><input type="radio" value="time" checked={unit === 'time'} onChange={() => setUnit('time')} /> Time</label>
+            </div>
+          </div>
+          <div>
             <label>Sets</label>
             <input type="number" value={sets} onChange={e => setSets(e.target.value)} required min="1" />
           </div>
-          <div>
-            <label>Reps</label>
-            <input type="text" value={reps} onChange={e => setReps(e.target.value)} required placeholder="e.g., 8-12" />
-          </div>
+          {unit === 'reps' ? (
+            <div>
+              <label>Reps</label>
+              <input type="text" value={reps} onChange={e => setReps(e.target.value)} required placeholder="e.g., 8-12" />
+            </div>
+          ) : (
+            <div>
+              <label>Duration (seconds)</label>
+              <input type="number" value={duration} onChange={e => setDuration(e.target.value)} required min="1" />
+            </div>
+          )}
           <button type="submit" disabled={submitting}>{submitting ? 'Assigning...' : 'Assign Exercise'}</button>
         </form>
       </div>

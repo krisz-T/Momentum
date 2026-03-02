@@ -120,7 +120,7 @@ app.get('/api/plans/:id', async (req, res) => {
     const { id } = req.params;
     const { data, error } = await supabase
       .from('training_plans')
-      .select('*, plan_workouts(*, workout_exercises(*, exercises(name, description, video_url)))') // Explicitly select exercise columns
+      .select('*, plan_workouts(*, workout_exercises(*, exercises(name, description, video_url)))')
       .eq('id', id)
       .single(); // We expect only one plan
 
@@ -171,6 +171,38 @@ app.post('/api/exercises', authenticate, isAdmin, async (req, res) => {
     res.status(201).json(data);
   } catch (error) {
     res.status(500).json({ error: 'Failed to create exercise.' });
+  }
+});
+
+// Admin-only route to get details for a single exercise
+app.get('/api/exercises/:id', authenticate, isAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { data, error } = await supabase
+      .from('exercises')
+      .select('*')
+      .eq('id', id)
+      .single();
+    if (error) throw error;
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch exercise details.' });
+  }
+});
+
+// Admin-only route to update an exercise
+app.patch('/api/exercises/:id', authenticate, isAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, description, video_url } = req.body;
+    if (!name) return res.status(400).json({ error: 'Exercise name is required.' });
+
+    const { data, error } = await supabase.from('exercises').update({ name, description, video_url }).eq('id', id).select().single();
+
+    if (error) throw error;
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update exercise.' });
   }
 });
 
@@ -244,17 +276,20 @@ app.get('/api/plan-workouts/:id', authenticate, isAdmin, async (req, res) => {
 app.post('/api/plan-workouts/:workoutId/exercises', authenticate, isAdmin, async (req, res) => {
   try {
     const { workoutId } = req.params;
-    const { exercise_id, sets, reps } = req.body;
-    if (!exercise_id || !sets || !reps) {
-      return res.status(400).json({ error: 'Exercise, sets, and reps are required.' });
+    const { exercise_id, sets, reps, duration_seconds } = req.body;
+    if (!exercise_id || !sets || (!reps && !duration_seconds)) {
+      return res.status(400).json({ error: 'Exercise, sets, and either reps or a duration are required.' });
     }
 
-    const { data, error } = await supabase.from('workout_exercises').insert({
+    const insertData = {
       plan_workout_id: workoutId,
       exercise_id,
       sets: Number(sets),
-      reps
-    }).select().single();
+      reps: reps || null,
+      duration_seconds: duration_seconds ? Number(duration_seconds) : null,
+    };
+
+    const { data, error } = await supabase.from('workout_exercises').insert(insertData).select().single();
 
     if (error) throw error;
 
@@ -408,6 +443,74 @@ app.patch('/api/users/:id/ban', authenticate, isAdmin, async (req, res) => {
   } catch (error) {
     console.error('Error banning user:', error.message);
     res.status(500).json({ error: 'Failed to ban user' });
+  }
+});
+
+// Admin-only route to DELETE a user
+app.delete('/api/users/:id', authenticate, isAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    // Step 1: Delete the user from the public profile table.
+    // The ON DELETE CASCADE constraints will clean up workouts, badges, enrollments.
+    const { error: profileError } = await supabase.from('users').delete().eq('id', id);
+    if (profileError) throw profileError;
+
+    // Step 2: Delete the user from the authentication system.
+    const { error: authError } = await supabase.auth.admin.deleteUser(id);
+    if (authError && authError.message !== 'User not found') {
+      // This is a problem: the profile is gone but the login remains.
+      // In a real production app, we'd need a more robust transaction or cleanup job.
+      console.error(`CRITICAL: Profile for user ${id} was deleted, but auth entry could not be removed: ${authError.message}`);
+    }
+
+    res.status(204).send(); // 204 No Content is standard for successful DELETE
+  } catch (error) {
+    console.error('Error deleting user:', error.message);
+    res.status(500).json({ error: 'Failed to delete user.' });
+  }
+});
+
+// Admin-only route to DELETE a training plan
+app.delete('/api/plans/:id', authenticate, isAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    // ON DELETE CASCADE in the DB will handle associated plan_workouts
+    const { error } = await supabase.from('training_plans').delete().eq('id', id);
+    if (error) throw error;
+    res.status(204).send();
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete training plan.' });
+  }
+});
+
+// Admin-only route to DELETE a scheduled workout from a plan
+app.delete('/api/plan-workouts/:id', authenticate, isAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    // ON DELETE CASCADE will handle associated workout_exercises
+    const { error } = await supabase.from('plan_workouts').delete().eq('id', id);
+    if (error) throw error;
+    res.status(204).send();
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete scheduled workout.' });
+  }
+});
+
+// Admin-only route to DELETE an exercise from the library
+app.delete('/api/exercises/:id', authenticate, isAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { error } = await supabase.from('exercises').delete().eq('id', id);
+    if (error) {
+      // This will fail if the exercise is in use due to foreign key constraints
+      if (error.code === '23503') {
+        return res.status(409).json({ error: 'Cannot delete: Exercise is currently used in a workout plan.' });
+      }
+      throw error;
+    }
+    res.status(204).send();
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete exercise.' });
   }
 });
 

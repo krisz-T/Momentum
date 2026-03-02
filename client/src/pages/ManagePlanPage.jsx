@@ -62,6 +62,25 @@ const ManagePlanPage = () => {
     }
   };
 
+  const handleDeleteWorkout = async (workoutId) => {
+    if (!window.confirm('Delete this scheduled workout from the plan?')) return;
+    try {
+      if (!session) throw new Error('Authentication error');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/plan-workouts/${workoutId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${session.access_token}` },
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete workout');
+      }
+      // Refresh the plan details to show the change
+      await fetchPlanDetails();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
   if (loading) return <p>Loading plan...</p>;
   if (error) return <p style={{ color: '#ff6b6b' }}>Error: {error}</p>;
   if (!plan) return <p>Plan not found.</p>;
@@ -78,6 +97,7 @@ const ManagePlanPage = () => {
             {plan.plan_workouts.map(w => (
               <div key={w.id} className="manage-plan-item">
                 <span>Day {w.day_of_plan}: {w.workout_type}</span>
+                <button onClick={() => handleDeleteWorkout(w.id)} className="delete-button-sm">X</button>
                 <Link to={`/admin/workouts/${w.id}`} className="button-link">Manage Exercises</Link>
               </div>
             ))}
