@@ -17,6 +17,7 @@ const Header = () => {
       <div className="header-right">
         {userProfile?.role === 'Admin' && <Link to="/admin">Admin Dashboard</Link>}
         <Link to="/profile">My Profile</Link>
+        <Link to="/plans">Training Plans</Link>
         <span>{session.user.email}</span>
         <button onClick={handleLogout}>Logout</button>
       </div>

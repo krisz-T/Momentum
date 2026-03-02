@@ -64,6 +64,22 @@ app.get('/api/profile', authenticate, async (req, res) => {
   }
 });
 
+// A protected route to get the user's current plan enrollments
+app.get('/api/profile/enrollments', authenticate, async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('user_plan_enrollments')
+      .select('plan_id')
+      .eq('user_id', req.user.id)
+      .eq('status', 'active');
+
+    if (error) throw error;
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch enrollments' });
+  }
+});
+
 // A protected route to get the current user's earned badges
 app.get('/api/profile/badges', authenticate, async (req, res) => {
   try {
@@ -79,6 +95,67 @@ app.get('/api/profile/badges', authenticate, async (req, res) => {
   } catch (error) {
     console.error('Error fetching user badges:', error.message);
     res.status(500).json({ error: 'Failed to fetch user badges' });
+  }
+});
+
+// Public route to get all available training plans
+app.get('/api/plans', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('training_plans')
+      .select('id, title, description, duration_weeks');
+
+    if (error) throw error;
+
+    res.json(data);
+  } catch (error) {
+    console.error('Error fetching training plans:', error.message);
+    res.status(500).json({ error: 'Failed to fetch training plans' });
+  }
+});
+
+// Public route to get a single training plan by ID, including its scheduled workouts
+app.get('/api/plans/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { data, error } = await supabase
+      .from('training_plans')
+      .select('*, plan_workouts(*, workout_exercises(*, exercises(*)))') // Deeply fetch exercises
+      .eq('id', id)
+      .single(); // We expect only one plan
+
+    if (error) throw error;
+
+    res.json(data);
+  } catch (error) {
+    console.error('Error fetching single training plan:', error.message);
+    res.status(500).json({ error: 'Failed to fetch training plan details' });
+  }
+});
+
+// Protected route to enroll a user in a plan
+app.post('/api/plans/:id/enroll', authenticate, async (req, res) => {
+  try {
+    const planId = req.params.id;
+    const userId = req.user.id;
+
+    // Check if user is already enrolled
+    const { data: existing, error: existingError } = await supabase
+      .from('user_plan_enrollments')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('plan_id', planId)
+      .eq('status', 'active')
+      .single();
+
+    if (existing) return res.status(409).json({ error: 'Already enrolled in this plan.' });
+
+    const { data, error } = await supabase.from('user_plan_enrollments').insert({ user_id: userId, plan_id: planId }).select().single();
+    if (error) throw error;
+
+    res.status(201).json(data);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to enroll in plan.' });
   }
 });
 

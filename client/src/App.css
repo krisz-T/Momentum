@@ -157,3 +157,81 @@ hr {
   padding: 0.5rem 1rem;
   font-weight: 500;
 }
+
+/* --- Training Plan Styles --- */
+.plans-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+  text-align: left;
+}
+
+.plan-card {
+  background-color: #242424;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.plan-card h2 {
+  margin-top: 0;
+  font-size: 1.5em;
+}
+
+.plan-card p {
+  flex-grow: 1; /* Pushes the button to the bottom */
+  color: #ccc;
+}
+
+.plan-card span {
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.button-link {
+  display: inline-block;
+  text-align: center;
+  background-color: #646cff;
+  color: white;
+  padding: 0.6em 1.2em;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background-color 0.25s;
+}
+.button-link:hover {
+  background-color: #535bf2;
+  text-decoration: none;
+  color: white;
+}
+
+.workout-schedule {
+  margin-top: 2rem;
+  text-align: left;
+}
+
+.workout-schedule-item {
+  background-color: #242424;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.enrolled-message {
+  font-weight: bold;
+  color: #a5d6a7;
+}
+
+.exercise-list {
+  list-style-type: none;
+  padding-left: 1rem;
+  margin-top: 1rem;
+  border-left: 2px solid #444;
+}
+
+.exercise-list li {
+  margin-bottom: 0.5rem;
+}

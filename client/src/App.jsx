@@ -6,6 +6,8 @@ import ResetPassword from './components/ResetPassword';
 import AdminDashboard from './pages/AdminDashboard';
 import MyProfile from './pages/MyProfile';
 import HomePage from './pages/HomePage';
+import PlanDetailPage from './pages/PlanDetailPage';
+import TrainingPlansPage from './pages/TrainingPlansPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import Header from './components/Header';
 import { useAuth } from './contexts/AuthContext';
@@ -40,6 +42,8 @@ function App() {
               </ProtectedRoute>
             } />
             <Route path="/profile" element={<MyProfile />} />
+            <Route path="/plans" element={<TrainingPlansPage />} />
+            <Route path="/plans/:id" element={<PlanDetailPage />} />
           </Routes>
         </div>
       )}
