@@ -19,6 +19,36 @@ const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_KEY; // Use the service role key for backend operations
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+// Middleware to get the user from the Supabase-provided JWT
+const authenticate = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'No token provided' });
+  }
+
+  const token = authHeader.split(' ')[1];
+  const { data: { user }, error } = await supabase.auth.getUser(token);
+
+  if (error) {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+
+  req.user = user;
+  next();
+};
+
+// A protected route to get the current user's profile from our public.users table
+app.get('/api/profile', authenticate, async (req, res) => {
+  try {
+    const { data, error } = await supabase.from('users').select('*').eq('id', req.user.id).single();
+    if (error) throw error;
+    res.json(data);
+  } catch (error) {
+    console.error('Error fetching profile:', error.message);
+    res.status(500).json({ error: 'Failed to fetch user profile' });
+  }
+});
+
 app.get('/api/leaderboard', async (req, res) => {
   try {
     const { data, error } = await supabase
