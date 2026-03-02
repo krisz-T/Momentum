@@ -1,30 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
-function WorkoutForm({ onWorkoutLogged }) {
-  const [users, setUsers] = useState([]);
-  const [userId, setUserId] = useState('');
+function WorkoutForm({ session, onWorkoutLogged }) {
   const [type, setType] = useState('Running');
   const [duration, setDuration] = useState(30);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
-
-  useEffect(() => {
-    async function fetchUsers() {
-      try {
-        const apiUrl = `${import.meta.env.VITE_API_BASE_URL}/api/users`;
-        const response = await fetch(apiUrl);
-        const data = await response.json();
-        setUsers(data);
-        // Set the default user to the first one in the list
-        if (data.length > 0) {
-          setUserId(data[0].id);
-        }
-      } catch (err) {
-        console.error("Failed to fetch users:", err);
-      }
-    }
-    fetchUsers();
-  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -32,12 +12,14 @@ function WorkoutForm({ onWorkoutLogged }) {
     setError(null);
 
     try {
+      if (!session) throw new Error('You must be logged in to log a workout.');
+
       const apiUrl = `${import.meta.env.VITE_API_BASE_URL}/api/workouts`;
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userId,
+          userId: session.user.id, // Use the logged-in user's ID
           type,
           duration: Number(duration), // Ensure duration is sent as a number
         }),
@@ -66,20 +48,6 @@ function WorkoutForm({ onWorkoutLogged }) {
     <form onSubmit={handleSubmit}>
       <h2>Log a New Workout</h2>
       {error && <p style={{ color: '#ff6b6b' }}>Error: {error}</p>}
-      <div>
-        <label>Select User:</label>
-        <select
-          value={userId}
-          onChange={(e) => setUserId(e.target.value)}
-          required
-        >
-          {users.map(user => (
-            <option key={user.id} value={user.id}>
-              {user.name}
-            </option>
-          ))}
-        </select>
-      </div>
       <div>
         <label>Workout Type:</label>
         <input

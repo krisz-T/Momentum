@@ -1,13 +1,28 @@
 import { useState, useEffect, useCallback } from 'react';
 import './App.css';
 import WorkoutForm from './components/WorkoutForm';
+import Auth from './components/Auth';
+import { supabase } from './supabaseClient';
 
 function App() {
+  const [session, setSession] = useState(null);
   const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   // This state acts as a trigger to refetch data
   const [refreshKey, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    // Check for an active session on initial load
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    // Listen for changes in authentication state (login/logout)
+    supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+  }, []);
 
   const fetchLeaderboard = useCallback(async () => {
     setLoading(true);
@@ -29,7 +44,7 @@ function App() {
   }, []);
 
   useEffect(() => {
-    fetchLeaderboard();
+    if (session) fetchLeaderboard(); // Only fetch if logged in
   }, [refreshKey, fetchLeaderboard]); // Reruns when refreshKey changes
 
   const handleWorkoutLogged = () => {
@@ -37,32 +52,46 @@ function App() {
     setRefreshKey(prevKey => prevKey + 1);
   };
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+  };
+
   return (
-    <div>
-      <WorkoutForm onWorkoutLogged={handleWorkoutLogged} />
-      <hr />
-      <h1>Momentum Leaderboard</h1>
-      {loading && <p>Loading...</p>}
-      {error && <p>Error: {error}</p>}
-      {!loading && !error && (
-        <table>
-          <thead>
-            <tr>
-              <th>Rank</th>
-              <th>Name</th>
-              <th>XP</th>
-            </tr>
-          </thead>
-          <tbody>
-            {leaderboard.map((user, index) => (
-              <tr key={user.id}>
-                <td>{index + 1}</td>
-                <td>{user.name}</td>
-                <td>{user.total_xp}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+    <div className="container">
+      {!session ? (
+        <Auth />
+      ) : (
+        <div>
+          <header>
+            <span>Welcome, {session.user.email}</span>
+            <button onClick={handleLogout}>Logout</button>
+          </header>
+          <WorkoutForm session={session} onWorkoutLogged={handleWorkoutLogged} />
+          <hr />
+          <h1>Momentum Leaderboard</h1>
+          {loading && <p>Loading...</p>}
+          {error && <p>Error: {error}</p>}
+          {!loading && !error && (
+            <table>
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Name</th>
+                  <th>XP</th>
+                </tr>
+              </thead>
+              <tbody>
+                {leaderboard.map((user, index) => (
+                  <tr key={user.id}>
+                    <td>{index + 1}</td>
+                    <td>{user.name}</td>
+                    <td>{user.total_xp}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
       )}
     </div>
   );
