@@ -1,0 +1,141 @@
+Software Architectures - Project Work
+1. Requirements
+The project work is your opportunity to demonstrate architectural thinking in practice. You will
+design and build a small but complete software system, making conscious and documented
+decisions about its architecture. The focus is not on the amount of features, but on the
+quality of your architectural choices, how well you document them, and how effectively you
+use AI-assisted development.
+Each student selects one project from the list below (or proposes a custom project with
+instructor approval) and works on it individually throughout the semester.
+2. Minimum Scope & Complexity
+Your project must meet the following minimum requirements to be considered complete.
+These define the baseline – exceeding them is encouraged but not required for a passing
+grade.
+2.1 Functional Requirements
+● At least 5 distinct features (e.g., in an expense tracker: add expense, split calculation,
+settlement history, recurring expenses, export report).
+● At least 2 user roles or interaction modes (e.g., organizer vs. attendee, admin vs.
+regular user, quiz creator vs. quiz taker).
+● Persistent data storage – the application must store and retrieve data across
+sessions (database, file-based storage, or equivalent).
+● A working, interactive user interface (web, mobile, or desktop – no CLI-only projects).
+2.2 Architectural Requirements
+● Clear layered architecture with separation of concerns (e.g., presentation, business
+logic, data access).
+● Feature decomposition documented in a structured way.
+● State management strategy chosen and justified for the frontend.
+● An OpenAPI specification for the backend API (if applicable) or equivalent interface
+contract.
+● Error taxonomy – categorized error types with consistent, meaningful error
+responses.
+● Basic security considerations: input validation, authentication for at least one
+protected resource, and a simple threat model.
+● At least 3 Architecture Decision Records (ADRs) documenting key decisions.
+2.3 What You Do NOT Need
+You do not need real deployment to a cloud provider, payment integration, real-time features
+(WebSockets), complex DevOps pipelines, or a mobile-native app. A locally runnable
+application with a clear README on how to start it is perfectly sufficient. Focus your energy
+on architecture, not infrastructure.
+3. Vibe Coding & AI-Assisted Development
+This course embraces AI-assisted development as a core methodology. You are expected to
+use GitHub Copilot Pro (provided to you) and/or other AI tools (e.g., ChatGPT, Claude) to
+help build your project. However, using AI effectively is a skill – and that skill is being
+evaluated.
+What “Awareness of AI use” means (15 points):
+• Maintain a prompt log: keep a record of significant prompts you used and the AI’s
+responses (a simple Markdown file is fine).
+• Document your evaluation process: when the AI generated code or architectural
+suggestions, did you accept, modify, or reject them? Why?
+• Show critical thinking: demonstrate that you understood what the AI produced, not
+just copy-pasted it blindly.
+• Reflect on AI limitations: note at least one case where the AI was wrong or unhelpful,
+and explain how you handled it.
+The goal is not to minimize AI use – it is to maximize conscious, deliberate AI use. Blind
+copy-paste with no understanding will score poorly; thoughtful collaboration with AI will score
+well.
+4. Deliverables
+Your final submission (due May 10, 2026) must include:
+• Source code in the GitHub Classroom repository with meaningful commit history.
+• README.md with setup instructions (how to install and run the project locally).
+• Architecture documentation: at least 3 ADRs, feature decomposition, and a high-level
+architecture diagram.
+• OpenAPI specification (or equivalent interface contract).
+• Error taxonomy document describing your error categories and handling strategy.
+• Threat model (can be a simple document or diagram identifying key threats and
+mitigations).
+• AI prompt log with evaluation notes.
+Presentation: On May 11, 2026, you will present your project in class. The presentation
+should be a short live demo (5–10 minutes) focusing on your architectural decisions and how
+they shaped the final product.
+5. Grading
+The project is worth a maximum of 100 points. You must earn at least 50 points for the
+project to be accepted.
+Criteria Points What We Look For
+Architectural
+structure
+30 Clean separation of concerns, appropriate patterns, justified
+technology choices, well-defined API contracts.
+Documentation 20 Architecture Decision Records (ADRs), OpenAPI spec,
+README, and inline documentation where needed.
+Appearance and
+user experience
+20 Polished, responsive UI with consistent design language and
+intuitive navigation.
+Error handling
+and security
+15 Error taxonomy, meaningful error messages, input validation,
+authentication, and threat awareness.
+Awareness of AI
+use
+15 Documented prompt history, critical evaluation of AI output,
+conscious acceptance/rejection decisions.
+6. Important Dates
+• Project submission deadline: May 10, 2026, 23:59
+• In-class presentation: May 11, 2026
+7. List of potential project topics
+1. PantryPal – Smart Kitchen Inventory An application that helps users track what's in
+their kitchen, suggests recipes based on available ingredients, and generates shopping lists
+for missing items.
+2. SkillSwap – Peer-to-Peer Skill Exchange A marketplace where users can offer skills
+they have (e.g., guitar lessons) and request skills they want to learn, coordinating sessions
+and leaving reviews.
+3. SplitWise Lite – Group Expense Tracker An app for groups of friends or roommates to
+log shared expenses, automatically calculate who owes whom, and track settlement history.
+4. StudyBuddy – Collaborative Study Planner A tool for university students to organize
+study groups, share notes, schedule study sessions, and track progress toward exam
+preparation goals.
+5. GreenScore – Personal Carbon Footprint Tracker Users log daily activities
+(transportation, meals, energy use) and the app estimates their carbon footprint, sets
+reduction goals, and visualizes trends over time.
+6. BookCircle – Neighborhood Book Lending A platform for a local community to list
+books they own and are willing to lend, request borrows, and manage lending periods and
+returns.
+7. FitQuest – Gamified Workout Tracker A fitness app where users log workouts, earn XP
+and badges for consistency, compete on leaderboards, and follow structured training plans.
+8. MealPrep Pro – Weekly Meal Planner An application that lets users plan their meals for
+the week, automatically aggregates ingredients into a shopping list, and tracks nutritional
+intake.
+9. PetCare – Pet Health & Routine Manager Pet owners can track vaccinations, vet
+appointments, feeding schedules, medication reminders, and share care responsibilities with
+family members.
+10. FreelanceFlow – Freelancer Project Dashboard A tool for freelancers to manage
+clients, track project milestones, log billable hours, generate simple invoices, and monitor
+income over time.
+11. CampusMarket – Student Marketplace A buy-and-sell platform for university students
+to list used textbooks, electronics, furniture, and other items, with in-app messaging and
+meetup coordination.
+12. TravelLog – Trip Planning & Journal Users can plan upcoming trips with itineraries
+and budgets, then document their experiences with photos, notes, and location pins during
+and after the trip.
+13. VolunteerHub – Volunteer Opportunity Board Organizations can post volunteer
+opportunities and volunteers can browse, sign up, track their hours, and receive certificates
+for their contributions.
+14. HabitForge – Habit Tracker & Accountability An app where users define habits they
+want to build or break, log daily check-ins, visualize streaks, and optionally pair up with an
+accountability partner.
+15. QuizForge – Custom Quiz Builder A platform where users can create custom quizzes
+on any topic, share them via link, and track respondents' scores and statistics. Supports
+multiple question types (multiple choice, true/false, open-ended) and timed quiz modes.
++1. Custom Project – Your Own Idea Students may propose their own project idea, subject
+to instructor approval. The project must be of comparable scope and complexity to the
+options above.

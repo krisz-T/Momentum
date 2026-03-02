@@ -1,0 +1,100 @@
+# 🚀 Momentum: Project Master Plan
+
+### 1. Project Overview
+
+Momentum is a gamified workout tracker designed to keep users consistent through RPG-like mechanics (XP, streaks, badges) and social competition.
+
+* **Core Value:** "Fitness meets Gaming."
+* **Primary Constraint:** Must be highly deployable and demonstrate a clean, working architecture for a university grade without causing 1000 local configuration errors.
+* **Target Audience:** Athletes (Users) and Admins (Moderators/Creators).
+
+### 2. Architecture & Technology Stack
+
+We have selected a classic **3-Tier Web Architecture** (Client -> Server -> Database) to ensure a strict separation of concerns, making the system highly testable and easy to document.
+
+| Component | Technology | Justification (Why?) |
+| --- | --- | --- |
+| **Frontend (Tier 1)** | React (Vite) | Lightning-fast scaffolding. Best ecosystem for UI components. Deploys seamlessly. |
+| **Backend (Tier 2)** | Node.js (Express) | Industry standard for REST APIs. Lightweight and simple to route HTTP requests. |
+| **Database (Tier 3)** | Supabase (PostgreSQL) | Cloud-hosted Backend-as-a-Service. Bypasses all local database installation errors while providing robust relational data integrity. |
+| **Frontend Host** | Vercel | Connects directly to GitHub for one-click live UI hosting. |
+| **Backend Host** | Render | Connects to GitHub for free, instant Node.js API hosting. |
+
+### 3. Functional Requirements (The Core User Stories)
+
+* **Workout Logging (US-01):** Athletes can log completed workouts with details (duration, type).
+* **Gamification Engine (US-02):** System calculates XP and unlocks streak-based badges.
+* **Global Leaderboards (US-03):** Athletes can view a global ranking based on weekly/total XP to compete with others.
+* **Structured Training (US-04):** Athletes can enroll in a 4-week training plan.
+* **Dynamic Content (US-05):** Admins can create new global challenges and badges to keep the platform engaging over time.
+* **Moderation (US-06):** Admins can ban users who submit fake workout data to keep the leaderboards fair.
+
+### 4. Data Model (High-Level Schema)
+
+We will use a Relational Model in Supabase to enforce data integrity.
+
+* **Users:** `id`, `name`, `role` (Athlete/Admin), `total_xp`, `is_banned`
+* **Workouts:** `id`, `user_id`, `type`, `duration`, `date_logged`
+* **Badges:** `id`, `user_id`, `badge_name`, `earned_at`
+* **Plans (Optional):** `id`, `title`, `duration_weeks`
+
+### 5. Quality Attribute Strategy
+
+**A. Scalability & Performance (Peak Load Logging & Leaderboards)**
+
+* **Strategy:** Database Indexing & Stateless Backend.
+* **Implementation:** * The Express backend is completely stateless, meaning Render can easily spin up more instances if needed.
+* We will place a database index on `Users.total_xp` in Supabase. This ensures that fetching the "Top 50 Users" takes milliseconds, satisfying the high-performance requirement for leaderboards without needing a complex Redis cache.
+
+
+
+**B. Modifiability (Layered Architecture)**
+
+* **Strategy:** Strict Separation of Concerns.
+* **Implementation:** * The React UI *never* talks to the database directly.
+* If we need to change how XP is calculated, we only update the specific Express route (`POST /api/workouts`), leaving the UI and the database untouched.
+
+
+
+**C. Deployability**
+
+* **Strategy:** Continuous Deployment (CD) via PaaS.
+* **Implementation:** Connecting Vercel and Render directly to the GitHub repository ensures that every time code is merged into the main branch, the live internet version updates automatically.
+
+### 6. Implementation Roadmap
+
+We will build this incrementally to ensure a working product at every step.
+
+* **Phase 1: The Scaffolding (Week 1)**
+* Initialize GitHub repo.
+* Scaffold React (Vite) frontend.
+* Scaffold Node/Express backend.
+* **Deliverable:** Two working local folders tracked by Git.
+
+
+* **Phase 2: Data & Routing (Week 2)**
+* Set up Supabase project and create the SQL tables.
+* Write Express routes (`GET /leaderboard`, `POST /workouts`) connected to Supabase.
+* **Deliverable:** A working backend API that can read/write data (tested via Postman/ThunderClient).
+
+
+* **Phase 3: The User Interface (Week 3)**
+* Build React components (Forms, Tables, Dashboards).
+* Connect React to the local Express API using `fetch()`.
+* **Deliverable:** A fully functioning local web application.
+
+
+* **Phase 4: Deployment & Polish (Week 4)**
+* Push backend to Render.
+* Push frontend to Vercel (updating API URLs).
+* Write the architecture documentation.
+* **Deliverable:** A live URL to hand in for grading.
+
+
+
+### 7. Required Documentation Checklist (For the Grade)
+
+* [ ] **Architecture Diagram:** Visual map showing React $\rightarrow$ Express $\rightarrow$ Supabase.
+* [ ] **ADR 001:** Choosing React & Vite over heavy frameworks for fast DX.
+* [ ] **ADR 002:** Choosing Node/Express to enforce a strict Client-Server boundary.
+* [ ] **ADR 003:** Choosing Supabase (Cloud Postgres) over local databases to prioritize Deployability and mitigate local environment errors.
