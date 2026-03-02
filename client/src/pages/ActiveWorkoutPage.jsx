@@ -82,9 +82,8 @@ const ActiveWorkoutPage = () => {
           </p>
         )}
         {currentExercise?.exercises.video_url && (
-          <div className="exercise-video">
+          <div className="video-container">
             <iframe
-              width="100%"
               src={currentExercise.exercises.video_url}
               title="YouTube video player"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
