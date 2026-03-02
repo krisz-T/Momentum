@@ -2,33 +2,63 @@ import { useState } from 'react'
 import { supabase } from '../supabaseClient'
 
 export default function Auth() {
-  const [isLogin, setIsLogin] = useState(true)
+  const [view, setView] = useState('signIn') // 'signIn', 'signUp', or 'forgotPassword'
   const [loading, setLoading] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState(null)
+  const [message, setMessage] = useState(null)
 
   const handleSubmit = async (event) => {
     event.preventDefault()
     setLoading(true)
     setError(null)
+    setMessage(null)
 
-    const { error } = isLogin
-      ? await supabase.auth.signInWithPassword({ email, password })
-      : await supabase.auth.signUp({ email, password });
-
-    if (error) {
-      setError(error.message)
+    let response;
+    switch (view) {
+      case 'signIn':
+        response = await supabase.auth.signInWithPassword({ email, password });
+        break;
+      case 'signUp':
+        response = await supabase.auth.signUp({ email, password });
+        break;
+      case 'forgotPassword':
+        response = await supabase.auth.resetPasswordForEmail(email, {
+          // This is the URL the user will be redirected to after clicking the link
+          // in the password reset email. For now, it's just our app's home.
+          redirectTo: window.location.origin,
+        });
+        if (!response.error) {
+          setMessage('Password reset link sent! Check your email.');
+        }
+        break;
+      default:
+        break;
     }
+
+    if (response && response.error) {
+      setError(response.error.message)
+    }
+
     setLoading(false)
   }
 
   return (
     <div className="auth-container">
       <form onSubmit={handleSubmit}>
-        <h1>{isLogin ? 'Momentum Login' : 'Create Account'}</h1>
-        <p>{isLogin ? 'Sign in to track your progress' : 'Get started on your fitness journey'}</p>
+        <h1>
+          {view === 'signIn' && 'Momentum Login'}
+          {view === 'signUp' && 'Create Account'}
+          {view === 'forgotPassword' && 'Reset Password'}
+        </h1>
+        <p>
+          {view === 'signIn' && 'Sign in to track your progress'}
+          {view === 'signUp' && 'Get started on your fitness journey'}
+          {view === 'forgotPassword' && 'Enter your email to receive a reset link.'}
+        </p>
         {error && <p style={{ color: '#ff6b6b' }}>{error}</p>}
+        {message && <p style={{ color: '#a5d6a7' }}>{message}</p>}
         <div>
           <label htmlFor="email">Email</label>
           <input
@@ -39,26 +69,42 @@ export default function Auth() {
             required
           />
         </div>
-        <div>
-          <label htmlFor="password">Password</label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
+        {view !== 'forgotPassword' && (
+          <div>
+            <label htmlFor="password">Password</label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+        )}
         <button type="submit" disabled={loading}>
-          {loading ? 'Processing...' : (isLogin ? 'Sign In' : 'Sign Up')}
+          {loading && 'Processing...'}
+          {!loading && view === 'signIn' && 'Sign In'}
+          {!loading && view === 'signUp' && 'Sign Up'}
+          {!loading && view === 'forgotPassword' && 'Send Reset Link'}
         </button>
       </form>
-      <p className="auth-toggle">
-        {isLogin ? "Don't have an account? " : "Already have an account? "}
-        <button onClick={() => setIsLogin(!isLogin)}>
-          {isLogin ? 'Sign Up' : 'Sign In'}
-        </button>
-      </p>
+      {view === 'signIn' && (
+        <div className="auth-toggle">
+          <p>
+            Don't have an account?{' '}
+            <button onClick={() => setView('signUp')}>Sign Up</button>
+          </p>
+          <p>
+            <button onClick={() => setView('forgotPassword')}>Forgot Password?</button>
+          </p>
+        </div>
+      )}
+      {view !== 'signIn' && (
+        <p className="auth-toggle">
+          Already have an account?{' '}
+          <button onClick={() => setView('signIn')}>Sign In</button>
+        </p>
+      )}
     </div>
   )
 }

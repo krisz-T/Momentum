@@ -2,11 +2,13 @@ import { useState, useEffect, useCallback } from 'react';
 import './App.css';
 import WorkoutForm from './components/WorkoutForm';
 import Auth from './components/Auth';
+import ResetPassword from './components/ResetPassword';
 import { supabase } from './supabaseClient';
 
 function App() {
   const [session, setSession] = useState(null);
   const [leaderboard, setLeaderboard] = useState([]);
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   // This state acts as a trigger to refetch data
@@ -19,9 +21,17 @@ function App() {
     });
 
     // Listen for changes in authentication state (login/logout)
-    supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
+      if (event === 'PASSWORD_RECOVERY') {
+        setIsPasswordRecovery(true);
+      } else if (event === 'SIGNED_OUT') {
+        // Only exit recovery mode on explicit sign out
+        setIsPasswordRecovery(false);
+      }
     });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const fetchLeaderboard = useCallback(async () => {
@@ -45,7 +55,7 @@ function App() {
 
   useEffect(() => {
     if (session) fetchLeaderboard(); // Only fetch if logged in
-  }, [refreshKey, fetchLeaderboard]); // Reruns when refreshKey changes
+  }, [session, refreshKey, fetchLeaderboard]); // Reruns when refreshKey changes
 
   const handleWorkoutLogged = () => {
     // Increment the key to trigger the useEffect hook and refetch data
@@ -58,7 +68,11 @@ function App() {
 
   return (
     <div className="container">
-      {!session ? (
+      {isPasswordRecovery ? (
+        <ResetPassword onPasswordUpdated={() => setIsPasswordRecovery(false)} />
+      )
+      :
+      !session ? (
         <Auth />
       ) : (
         <div>
