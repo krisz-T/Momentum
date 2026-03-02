@@ -38,6 +38,23 @@ app.get('/api/leaderboard', async (req, res) => {
   }
 });
 
+app.get('/api/users', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select('id, name');
+
+    if (error) {
+      throw error;
+    }
+
+    res.json(data);
+  } catch (error) {
+    console.error('Error fetching users:', error.message);
+    res.status(500).json({ error: 'Failed to fetch users' });
+  }
+});
+
 app.post('/api/workouts', async (req, res) => {
   try {
     const { userId, type, duration } = req.body;

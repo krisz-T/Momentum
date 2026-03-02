@@ -1,13 +1,30 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 function WorkoutForm({ onWorkoutLogged }) {
-  // For this demo, we'll use a text input for the User ID.
-  // In a real app, this would come from the logged-in user's state.
-  const [userId, setUserId] = useState('33599428-03b8-467c-8074-4fdd6f709f1d');
+  const [users, setUsers] = useState([]);
+  const [userId, setUserId] = useState('');
   const [type, setType] = useState('Running');
   const [duration, setDuration] = useState(30);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
+
+  useEffect(() => {
+    async function fetchUsers() {
+      try {
+        const apiUrl = `${import.meta.env.VITE_API_BASE_URL}/api/users`;
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+        setUsers(data);
+        // Set the default user to the first one in the list
+        if (data.length > 0) {
+          setUserId(data[0].id);
+        }
+      } catch (err) {
+        console.error("Failed to fetch users:", err);
+      }
+    }
+    fetchUsers();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -50,13 +67,18 @@ function WorkoutForm({ onWorkoutLogged }) {
       <h2>Log a New Workout</h2>
       {error && <p style={{ color: '#ff6b6b' }}>Error: {error}</p>}
       <div>
-        <label>User ID (Select a user to log for):</label>
-        <input
-          type="text"
+        <label>Select User:</label>
+        <select
           value={userId}
           onChange={(e) => setUserId(e.target.value)}
           required
-        />
+        >
+          {users.map(user => (
+            <option key={user.id} value={user.id}>
+              {user.name}
+            </option>
+          ))}
+        </select>
       </div>
       <div>
         <label>Workout Type:</label>
