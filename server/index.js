@@ -22,7 +22,7 @@ app.get('/api/leaderboard', async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('users')
-      .select('name, total_xp')
+      .select('id, name, total_xp')
       .order('total_xp', { ascending: false })
       .limit(10);
 

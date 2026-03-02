@@ -12,8 +12,9 @@ function App() {
   const fetchLeaderboard = useCallback(async () => {
     setLoading(true);
     try {
-      // The URL of your running Express server's leaderboard endpoint
-      const response = await fetch('http://localhost:3001/api/leaderboard');
+      // Use the environment variable for the API base URL
+      const apiUrl = `${import.meta.env.VITE_API_BASE_URL}/api/leaderboard`;
+      const response = await fetch(apiUrl);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -54,7 +55,7 @@ function App() {
           </thead>
           <tbody>
             {leaderboard.map((user, index) => (
-              <tr key={user.name}>
+              <tr key={user.id}>
                 <td>{index + 1}</td>
                 <td>{user.name}</td>
                 <td>{user.total_xp}</td>
