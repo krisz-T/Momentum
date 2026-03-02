@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import Modal from '../components/Modal';
+import CreateExerciseForm from '../components/CreateExerciseForm';
 
 const ManageWorkoutPage = () => {
   const { id: workoutId } = useParams();
@@ -18,6 +20,7 @@ const ManageWorkoutPage = () => {
   const [reps, setReps] = useState('8-12');
   const [duration, setDuration] = useState(60);
   const [submitting, setSubmitting] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const fetchWorkoutDetails = useCallback(async () => {
     if (!session) return;
@@ -91,8 +94,10 @@ const ManageWorkoutPage = () => {
 
   return (
     <div>
-      <nav><Link to={`/admin/plans/${workout?.plan_id}`}>Back to Plan</Link></nav>
-      <h1>Managing Exercises for: {workout?.workout_type}</h1>
+      <div className="page-header">
+        <h1>Managing: {workout?.workout_type}</h1>
+        <nav><Link to={`/admin/plans/${workout?.plan_id}`}>Back to Plan</Link></nav>
+      </div>
 
       <div className="admin-section">
         <h2>Assigned Exercises</h2>
@@ -108,9 +113,12 @@ const ManageWorkoutPage = () => {
           <h3>Assign Exercise to Workout</h3>
           <div>
             <label>Exercise</label>
-            <select value={selectedExercise} onChange={e => setSelectedExercise(e.target.value)}>
-              {allExercises.map(ex => <option key={ex.id} value={ex.id}>{ex.name}</option>)}
-            </select>
+            <div className="form-group-inline">
+              <select value={selectedExercise} onChange={e => setSelectedExercise(e.target.value)}>
+                {allExercises.map(ex => <option key={ex.id} value={ex.id}>{ex.name}</option>)}
+              </select>
+              <button type="button" onClick={() => setIsCreateModalOpen(true)}>Create New</button>
+            </div>
           </div>
           <div>
             <label>Unit</label>
@@ -137,6 +145,16 @@ const ManageWorkoutPage = () => {
           <button type="submit" disabled={submitting}>{submitting ? 'Assigning...' : 'Assign Exercise'}</button>
         </form>
       </div>
+
+      <Modal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} title="Create New Exercise">
+        <CreateExerciseForm onExerciseCreated={async () => {
+          const exercises = await fetchAllExercises();
+          if (exercises && exercises.length > 0) {
+            setSelectedExercise(exercises[exercises.length - 1].id); // Select the newly created exercise
+          }
+          setIsCreateModalOpen(false);
+        }} />
+      </Modal>
     </div>
   );
 };

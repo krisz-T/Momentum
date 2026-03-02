@@ -87,8 +87,10 @@ const ManagePlanPage = () => {
 
   return (
     <div>
-      <nav><Link to="/admin">Back to Admin Dashboard</Link></nav>
-      <h1>Managing: {plan.title}</h1>
+      <div className="page-header">
+        <h1>Managing: {plan.title}</h1>
+        <nav><Link to="/admin">Back to Admin Dashboard</Link></nav>
+      </div>
 
       <div className="admin-section">
         <h2>Scheduled Workouts</h2>

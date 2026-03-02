@@ -7,8 +7,10 @@ const MyProfile = () => {
   const { userProfile, session } = useAuth();
   const [badges, setBadges] = useState([]);
   const [enrollments, setEnrollments] = useState([]);
+  const [workouts, setWorkouts] = useState([]);
   const [loadingBadges, setLoadingBadges] = useState(true);
   const [loadingEnrollments, setLoadingEnrollments] = useState(true);
+  const [loadingWorkouts, setLoadingWorkouts] = useState(true);
 
   useEffect(() => {
     // Fetch badges and enrollments only when the user profile is available
@@ -45,6 +47,23 @@ const MyProfile = () => {
       };
       fetchEnrollments();
     }
+
+    if (session) {
+      const fetchWorkouts = async () => {
+        try {
+          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/profile/workouts`, {
+            headers: { 'Authorization': `Bearer ${session.access_token}` },
+          });
+          const data = await response.json();
+          setWorkouts(data);
+        } catch (error) {
+          console.error('Failed to fetch workout history:', error);
+        } finally {
+          setLoadingWorkouts(false);
+        }
+      };
+      fetchWorkouts();
+    }
   }, [userProfile, session]);
 
   if (!userProfile) {
@@ -53,10 +72,10 @@ const MyProfile = () => {
 
   return (
     <div>
-      <h1>My Profile</h1>
-      <nav>
-        <Link to="/">Back to Home</Link>
-      </nav>
+      <div className="page-header">
+        <h1>My Profile</h1>
+        <nav><Link to="/">Back to Home</Link></nav>
+      </div>
 
       <div className="profile-details">
         <h2>{userProfile.name}</h2>
@@ -78,6 +97,32 @@ const MyProfile = () => {
             ))}
           </div>
         ) : <p>You are not enrolled in any active plans.</p>}
+      </div>
+
+      <div className="admin-section">
+        <h3>Recent Workouts</h3>
+        {loadingWorkouts ? (
+          <p>Loading history...</p>
+        ) : workouts.length > 0 ? (
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Duration</th>
+              </tr>
+            </thead>
+            <tbody>
+              {workouts.map(w => (
+                <tr key={w.id}>
+                  <td>{new Date(w.date_logged).toLocaleDateString()}</td>
+                  <td>{w.type}</td>
+                  <td>{Math.floor(w.duration / 60)} min</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : <p>No workouts logged yet.</p>}
       </div>
 
       <div className="badges-section">

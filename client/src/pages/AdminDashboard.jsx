@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import CreateExerciseForm from '../components/CreateExerciseForm';
 import CreatePlanForm from '../components/CreatePlanForm';
+import Modal from '../components/Modal';
 
 const AdminDashboard = () => {
   const { session } = useAuth();
@@ -10,6 +11,8 @@ const AdminDashboard = () => {
   const [plans, setPlans] = useState([]);
   const [exercises, setExercises] = useState([]);
   const [error, setError] = useState(null);
+  const [isExerciseModalOpen, setIsExerciseModalOpen] = useState(false);
+  const [isPlanModalOpen, setIsPlanModalOpen] = useState(false);
 
   const fetchPlans = useCallback(async () => {
     try {
@@ -58,7 +61,7 @@ const AdminDashboard = () => {
     fetchUsers();
     fetchPlans();
     fetchExercises();
-  }, [fetchUsers]);
+  }, [fetchUsers, fetchPlans, fetchExercises]);
 
   const handleBanUser = async (userId) => {
     if (!window.confirm('Are you sure you want to ban this user?')) return;
@@ -168,11 +171,10 @@ const AdminDashboard = () => {
 
   return (
     <div>
-      <h1>Admin Dashboard</h1>
-      <p>Manage all users in the system.</p>
-      <nav>
-        <Link to="/">Back to Home</Link>
-      </nav>
+      <div className="page-header">
+        <h1>Admin Dashboard</h1>
+        <nav><Link to="/">Back to Home</Link></nav>
+      </div>
       <div className="admin-section">
         <h2>User Management</h2>
         {error && <p style={{ color: '#ff6b6b' }}>Error: {error}</p>}
@@ -207,6 +209,7 @@ const AdminDashboard = () => {
         <div className="admin-forms-container">
           <div>
             <h3>Existing Exercises</h3>
+            <button onClick={() => setIsExerciseModalOpen(true)}>Create New Exercise</button>
             <div className="manage-plans-list">
               {exercises.map(ex => (
                 <div key={ex.id} className="manage-plan-item">
@@ -216,10 +219,10 @@ const AdminDashboard = () => {
                 </div>
               ))}
             </div>
-            <CreateExerciseForm onExerciseCreated={() => { fetchExercises(); }} />
           </div>
           <div>
             <h3>Existing Plans</h3>
+            <button onClick={() => setIsPlanModalOpen(true)}>Create New Plan</button>
             <div className="manage-plans-list">
               {plans.map(plan => (
                 <div key={plan.id} className="manage-plan-item">
@@ -229,10 +232,23 @@ const AdminDashboard = () => {
                 </div>
               ))}
             </div>
-            <CreatePlanForm onPlanCreated={() => { fetchPlans(); }} />
           </div>
         </div>
       </div>
+
+      <Modal isOpen={isExerciseModalOpen} onClose={() => setIsExerciseModalOpen(false)} title="Create New Exercise">
+        <CreateExerciseForm onExerciseCreated={() => {
+          fetchExercises();
+          setIsExerciseModalOpen(false);
+        }} />
+      </Modal>
+
+      <Modal isOpen={isPlanModalOpen} onClose={() => setIsPlanModalOpen(false)} title="Create New Training Plan">
+        <CreatePlanForm onPlanCreated={() => {
+          fetchPlans();
+          setIsPlanModalOpen(false);
+        }} />
+      </Modal>
     </div>
   );
 };

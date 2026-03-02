@@ -334,3 +334,59 @@ hr {
   margin-left: auto;
   margin-right: 1rem;
 }
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #444;
+}
+
+.page-header h1 {
+  margin: 0;
+  font-size: 2.2em;
+}
+
+.page-header nav a {
+  color: #aaa;
+}
+
+.form-group-inline {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.form-group-inline select {
+  flex-grow: 1;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #444;
+}
+
+.page-header h1 {
+  margin: 0;
+  font-size: 2.2em;
+}
+
+.page-header nav a {
+  color: #aaa;
+}
+
+.form-group-inline {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.form-group-inline select {
+  flex-grow: 1;
+}

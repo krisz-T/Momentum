@@ -80,6 +80,23 @@ app.get('/api/profile/enrollments', authenticate, async (req, res) => {
   }
 });
 
+// A protected route to get the current user's workout history
+app.get('/api/profile/workouts', authenticate, async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('workouts')
+      .select('id, type, duration, date_logged')
+      .eq('user_id', req.user.id)
+      .order('date_logged', { ascending: false })
+      .limit(20); // Limit to the last 20 workouts for performance
+
+    if (error) throw error;
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch workout history.' });
+  }
+});
+
 // A protected route to get the current user's earned badges
 app.get('/api/profile/badges', authenticate, async (req, res) => {
   try {
@@ -152,6 +169,26 @@ app.post('/api/plans/:id/enroll', authenticate, async (req, res) => {
 
     const { data, error } = await supabase.from('user_plan_enrollments').insert({ user_id: userId, plan_id: planId }).select().single();
     if (error) throw error;
+
+    // Award "Plan Starter" badge
+    try {
+      const { count, error: countError } = await supabase
+        .from('user_plan_enrollments')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId);
+
+      if (countError) throw countError;
+
+      if (count === 1) {
+        await supabase.from('badges').insert({
+          user_id: userId,
+          badge_name: 'Plan Starter',
+        });
+        console.log(`Awarded 'Plan Starter' badge to user ${userId}`);
+      }
+    } catch (badgeError) {
+      console.error('Could not award enrollment badge:', badgeError.message);
+    }
 
     res.status(201).json(data);
   } catch (error) {
@@ -359,8 +396,8 @@ app.post('/api/workouts', authenticate, async (req, res) => {
 
     if (userProfile.is_banned) return res.status(403).json({ error: 'This account is suspended and cannot log workouts.' });
 
-    // 2. Gamification Logic: Calculate XP. Let's say 15 XP per minute.
-    const xpGained = duration * 15;
+    // 2. Gamification Logic: Calculate XP at 1 per 4 seconds. Duration is now expected in seconds.
+    const xpGained = Math.floor(duration / 4);
 
     // 3. Insert the new workout into the 'workouts' table
     const { data: workoutData, error: workoutError } = await supabase
@@ -416,6 +453,32 @@ app.post('/api/workouts', authenticate, async (req, res) => {
           badge_name: '5-Workout Mark',
         });
         console.log(`Successfully awarded '5-Workout Mark' badge to user ${userId}`);
+      }
+
+      // Check for 10, 50, 100, etc.
+      const milestoneBadges = {
+        10: '10 Workouts',
+        50: '50 Workouts',
+        100: '100 Workouts Club',
+        500: '500 Workouts!',
+        1000: '1000 Workout Legend'
+      };
+
+      if (milestoneBadges[count]) {
+        const badgeName = milestoneBadges[count];
+        // Check if user already has this badge to prevent duplicates if logic ever re-runs
+        const { data: existingBadge, error: badgeCheckError } = await supabase
+          .from('badges')
+          .select('id')
+          .eq('user_id', userId)
+          .eq('badge_name', badgeName)
+          .single();
+
+        if (!existingBadge && !badgeCheckError) {
+          console.log(`Attempting to award '${badgeName}' badge...`);
+          await supabase.from('badges').insert({ user_id: userId, badge_name: badgeName });
+          console.log(`Successfully awarded '${badgeName}' badge to user ${userId}`);
+        }
       }
     } catch (badgeError) {
       // Log the error but don't fail the whole request, as badge awarding is secondary.

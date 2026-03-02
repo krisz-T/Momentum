@@ -26,7 +26,6 @@ const CreateExerciseForm = ({ onExerciseCreated }) => {
         const errData = await response.json();
         throw new Error(errData.error || 'Failed to create exercise');
       }
-      alert('Exercise created successfully!');
       setName('');
       setDescription('');
       setVideoUrl('');
