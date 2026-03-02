@@ -2,11 +2,16 @@ require('dotenv').config();
 const express = require('express');
 const { createClient } = require('@supabase/supabase-js');
 
+const cors = require('cors');
+
 const app = express();
 const port = 3001; // Using a port other than the React default
 
 // Middleware to parse JSON bodies. This is crucial for POST/PUT requests.
 app.use(express.json());
+
+// Enable CORS for all routes, allowing the React frontend to communicate with this server.
+app.use(cors());
 
 // Initialize Supabase client
 const supabaseUrl = process.env.SUPABASE_URL;
