@@ -64,6 +64,24 @@ app.get('/api/profile', authenticate, async (req, res) => {
   }
 });
 
+// A protected route to get the current user's earned badges
+app.get('/api/profile/badges', authenticate, async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('badges')
+      .select('badge_name, earned_at')
+      .eq('user_id', req.user.id)
+      .order('earned_at', { ascending: false });
+
+    if (error) throw error;
+
+    res.json(data);
+  } catch (error) {
+    console.error('Error fetching user badges:', error.message);
+    res.status(500).json({ error: 'Failed to fetch user badges' });
+  }
+});
+
 app.get('/api/leaderboard', async (req, res) => {
   try {
     const { data, error } = await supabase
@@ -148,6 +166,42 @@ app.post('/api/workouts', authenticate, async (req, res) => {
 
     if (rpcError) {
       throw rpcError;
+    }
+
+    // 4.5. Check for and award the "First Workout" badge
+    try {
+      console.log(`Checking for badges for user ${userId}...`);
+      const { count, error: countError } = await supabase
+        .from('workouts')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId);
+
+      if (countError) throw countError;
+
+      console.log(`User ${userId} has ${count} total workouts.`);
+
+      // If this is the user's first workout, award the badge
+      if (count === 1) {
+        console.log(`Attempting to award 'First Workout' badge...`);
+        await supabase.from('badges').insert({
+          user_id: userId,
+          badge_name: 'First Workout',
+        });
+        console.log(`Successfully awarded 'First Workout' badge to user ${userId}`);
+      }
+
+      // If this is the user's fifth workout, award a new badge
+      if (count === 5) {
+        console.log(`Attempting to award '5-Workout Mark' badge...`);
+        await supabase.from('badges').insert({
+          user_id: userId,
+          badge_name: '5-Workout Mark',
+        });
+        console.log(`Successfully awarded '5-Workout Mark' badge to user ${userId}`);
+      }
+    } catch (badgeError) {
+      // Log the error but don't fail the whole request, as badge awarding is secondary.
+      console.error('Could not award badge:', badgeError.message);
     }
 
     // 5. Return the newly created workout data with a 201 Created status

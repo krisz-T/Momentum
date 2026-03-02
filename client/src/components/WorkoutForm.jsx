@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 
-function WorkoutForm({ session, onWorkoutLogged }) {
+function WorkoutForm({ onWorkoutLogged }) {
+  const { session } = useAuth();
   const [type, setType] = useState('Running');
   const [duration, setDuration] = useState(30);
   const [submitting, setSubmitting] = useState(false);

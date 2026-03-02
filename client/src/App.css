@@ -139,3 +139,21 @@ hr {
   margin-top: 2rem;
   text-align: left;
 }
+
+/* --- Badge Styles --- */
+.badge-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding: 0;
+  list-style-type: none;
+}
+
+.badge {
+  background-color: #3a3a3a;
+  border: 1px solid #555;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+}

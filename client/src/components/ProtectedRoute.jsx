@@ -1,6 +1,9 @@
 import { Navigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
-const ProtectedRoute = ({ userProfile, children }) => {
+const ProtectedRoute = ({ children }) => {
+  const { userProfile } = useAuth();
+
   // First, wait for the user profile to be loaded
   if (userProfile === null) {
     return <div>Loading user permissions...</div>; // Or a loading spinner

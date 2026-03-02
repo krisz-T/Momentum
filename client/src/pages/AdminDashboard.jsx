@@ -1,14 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { supabase } from '../supabaseClient';
+import { useAuth } from '../contexts/AuthContext';
 
 const AdminDashboard = () => {
+  const { session } = useAuth();
   const [users, setUsers] = useState([]);
   const [error, setError] = useState(null);
 
   const fetchUsers = useCallback(async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('Authentication error');
 
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users`, {
@@ -22,7 +22,7 @@ const AdminDashboard = () => {
     } catch (err) {
       setError(err.message);
     }
-  }, []);
+  }, [session]);
 
   useEffect(() => {
     fetchUsers();
@@ -32,7 +32,6 @@ const AdminDashboard = () => {
     if (!window.confirm('Are you sure you want to ban this user?')) return;
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('Authentication error');
 
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/${userId}/ban`, {
@@ -59,7 +58,6 @@ const AdminDashboard = () => {
     if (!window.confirm('Are you sure you want to unban this user?')) return;
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('Authentication error');
 
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/${userId}/unban`, {
