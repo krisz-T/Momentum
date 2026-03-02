@@ -98,6 +98,9 @@ const PlanDetailPage = () => {
                 </li>
               ))}
             </ul>
+            <Link to="/workout-session" state={{ workout }} className="button-link">
+              Start Workout
+            </Link>
           </div>
         ))}
       </div>

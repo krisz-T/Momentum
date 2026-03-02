@@ -6,7 +6,10 @@ import ResetPassword from './components/ResetPassword';
 import AdminDashboard from './pages/AdminDashboard';
 import MyProfile from './pages/MyProfile';
 import HomePage from './pages/HomePage';
+import ManageWorkoutPage from './pages/ManageWorkoutPage';
+import ManagePlanPage from './pages/ManagePlanPage';
 import PlanDetailPage from './pages/PlanDetailPage';
+import ActiveWorkoutPage from './pages/ActiveWorkoutPage';
 import TrainingPlansPage from './pages/TrainingPlansPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import Header from './components/Header';
@@ -41,9 +44,20 @@ function App() {
                 <AdminDashboard />
               </ProtectedRoute>
             } />
+            <Route path="/admin/plans/:id" element={
+              <ProtectedRoute>
+                <ManagePlanPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/workouts/:id" element={
+              <ProtectedRoute>
+                <ManageWorkoutPage />
+              </ProtectedRoute>
+            } />
             <Route path="/profile" element={<MyProfile />} />
             <Route path="/plans" element={<TrainingPlansPage />} />
             <Route path="/plans/:id" element={<PlanDetailPage />} />
+            <Route path="/workout-session" element={<ActiveWorkoutPage />} />
           </Routes>
         </div>
       )}

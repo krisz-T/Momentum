@@ -25,7 +25,7 @@ function WorkoutForm({ onWorkoutLogged }) {
         },
         body: JSON.stringify({
           type,
-          duration: Number(duration), // Ensure duration is sent as a number
+          duration: Number(duration) * 60, // Convert minutes to seconds
         }),
       });
 

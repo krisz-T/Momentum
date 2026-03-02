@@ -120,7 +120,7 @@ app.get('/api/plans/:id', async (req, res) => {
     const { id } = req.params;
     const { data, error } = await supabase
       .from('training_plans')
-      .select('*, plan_workouts(*, workout_exercises(*, exercises(*)))') // Deeply fetch exercises
+      .select('*, plan_workouts(*, workout_exercises(*, exercises(name, description, video_url)))') // Explicitly select exercise columns
       .eq('id', id)
       .single(); // We expect only one plan
 
@@ -156,6 +156,112 @@ app.post('/api/plans/:id/enroll', authenticate, async (req, res) => {
     res.status(201).json(data);
   } catch (error) {
     res.status(500).json({ error: 'Failed to enroll in plan.' });
+  }
+});
+
+// Admin-only route to create a new exercise in the library
+app.post('/api/exercises', authenticate, isAdmin, async (req, res) => {
+  try {
+    const { name, description, video_url } = req.body;
+    if (!name) return res.status(400).json({ error: 'Exercise name is required.' });
+
+    const { data, error } = await supabase.from('exercises').insert({ name, description, video_url }).select().single();
+    if (error) throw error;
+
+    res.status(201).json(data);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to create exercise.' });
+  }
+});
+
+// Admin-only route to create a new training plan
+app.post('/api/plans', authenticate, isAdmin, async (req, res) => {
+  try {
+    const { title, description, duration_weeks } = req.body;
+    if (!title || !duration_weeks) return res.status(400).json({ error: 'Title and duration are required.' });
+
+    const { data, error } = await supabase.from('training_plans').insert({ title, description, duration_weeks }).select().single();
+    if (error) throw error;
+
+    res.status(201).json(data);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to create training plan.' });
+  }
+});
+
+// Admin-only route to add a scheduled workout to a plan
+app.post('/api/plans/:planId/workouts', authenticate, isAdmin, async (req, res) => {
+  try {
+    const { planId } = req.params;
+    const { day_of_plan, workout_type, suggested_duration } = req.body;
+    if (!day_of_plan || !workout_type) {
+      return res.status(400).json({ error: 'Day and workout type are required.' });
+    }
+
+    const { data, error } = await supabase.from('plan_workouts').insert({
+      plan_id: planId,
+      day_of_plan: Number(day_of_plan),
+      workout_type,
+      suggested_duration: Number(suggested_duration)
+    }).select().single();
+
+    if (error) throw error;
+
+    res.status(201).json(data);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to add workout to plan.' });
+  }
+});
+
+// Admin-only route to get all exercises from the library
+app.get('/api/exercises', authenticate, isAdmin, async (req, res) => {
+  try {
+    const { data, error } = await supabase.from('exercises').select('id, name');
+    if (error) throw error;
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch exercises.' });
+  }
+});
+
+// Admin-only route to get details for a single scheduled workout
+app.get('/api/plan-workouts/:id', authenticate, isAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { data, error } = await supabase
+      .from('plan_workouts')
+      .select('*, workout_exercises(*, exercises(name))')
+      .eq('id', id)
+      .single();
+    if (error) throw error;
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch workout details.' });
+  }
+});
+
+// Admin-only route to add an exercise to a scheduled workout
+app.post('/api/plan-workouts/:workoutId/exercises', authenticate, isAdmin, async (req, res) => {
+  try {
+    const { workoutId } = req.params;
+    const { exercise_id, sets, reps } = req.body;
+    if (!exercise_id || !sets || !reps) {
+      return res.status(400).json({ error: 'Exercise, sets, and reps are required.' });
+    }
+
+    const { data, error } = await supabase.from('workout_exercises').insert({
+      plan_workout_id: workoutId,
+      exercise_id,
+      sets: Number(sets),
+      reps
+    }).select().single();
+
+    if (error) throw error;
+
+    res.status(201).json(data);
+  } catch (error) {
+    console.error('Error adding exercise to workout:', error.message);
+    res.status(500).json({ error: 'Failed to add exercise to workout.' });
   }
 });
 
