@@ -1,11 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Routes, Route, Link } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import './App.css';
 import WorkoutForm from './components/WorkoutForm';
 import Auth from './components/Auth';
 import ResetPassword from './components/ResetPassword';
 import AdminDashboard from './pages/AdminDashboard';
+import MyProfile from './pages/MyProfile';
 import ProtectedRoute from './components/ProtectedRoute';
+import Header from './components/Header';
 import { supabase } from './supabaseClient';
 
 function App() {
@@ -108,13 +110,7 @@ function App() {
         <Auth />
       ) : (
         <div>
-          <header>
-            <span>Welcome, {session.user.email}</span>
-            {userProfile?.role === 'Admin' && (
-              <Link to="/admin">Admin Dashboard</Link>
-            )}
-            <button onClick={handleLogout}>Logout</button>
-          </header>
+          <Header session={session} userProfile={userProfile} onLogout={handleLogout} />
           <Routes>
             <Route path="/" element={
               <>
@@ -149,6 +145,9 @@ function App() {
               <ProtectedRoute userProfile={userProfile}>
                 <AdminDashboard />
               </ProtectedRoute>
+            } />
+            <Route path="/profile" element={
+              <MyProfile userProfile={userProfile} />
             } />
           </Routes>
         </div>
