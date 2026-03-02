@@ -37,6 +37,21 @@ const authenticate = async (req, res, next) => {
   next();
 };
 
+// Middleware to check if the authenticated user is an admin
+const isAdmin = async (req, res, next) => {
+  const { data, error } = await supabase.from('users').select('role').eq('id', req.user.id).single();
+
+  if (error || !data) {
+    return res.status(500).json({ error: 'Could not verify user role' });
+  }
+
+  if (data.role !== 'Admin') {
+    return res.status(403).json({ error: 'Forbidden: Admin access required' });
+  }
+
+  next();
+};
+
 // A protected route to get the current user's profile from our public.users table
 app.get('/api/profile', authenticate, async (req, res) => {
   try {
@@ -54,6 +69,7 @@ app.get('/api/leaderboard', async (req, res) => {
     const { data, error } = await supabase
       .from('users')
       .select('id, name, total_xp')
+      .eq('is_banned', false) // Banned users should not appear on the leaderboard
       .order('total_xp', { ascending: false })
       .limit(10);
 
@@ -68,11 +84,12 @@ app.get('/api/leaderboard', async (req, res) => {
   }
 });
 
-app.get('/api/users', async (req, res) => {
+// This should be a protected admin route
+app.get('/api/users', authenticate, isAdmin, async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('users')
-      .select('id, name');
+      .select('id, name, is_banned'); // Add is_banned to the selection
 
     if (error) {
       throw error;
@@ -85,14 +102,26 @@ app.get('/api/users', async (req, res) => {
   }
 });
 
-app.post('/api/workouts', async (req, res) => {
+app.post('/api/workouts', authenticate, async (req, res) => {
   try {
-    const { userId, type, duration } = req.body;
+    const { type, duration } = req.body;
+    const userId = req.user.id;
 
     // 1. Input validation
-    if (!userId || !type || !duration) {
-      return res.status(400).json({ error: 'Missing required fields: userId, type, duration' });
+    if (!type || !duration) {
+      return res.status(400).json({ error: 'Missing required fields: type, duration' });
     }
+
+    // Server-side check to see if the user is banned
+    const { data: userProfile, error: profileError } = await supabase
+      .from('users')
+      .select('is_banned')
+      .eq('id', userId)
+      .single();
+
+    if (profileError || !userProfile) return res.status(404).json({ error: 'User profile not found.' });
+
+    if (userProfile.is_banned) return res.status(403).json({ error: 'This account is suspended and cannot log workouts.' });
 
     // 2. Gamification Logic: Calculate XP. Let's say 15 XP per minute.
     const xpGained = duration * 15;
@@ -127,6 +156,36 @@ app.post('/api/workouts', async (req, res) => {
   } catch (error) {
     console.error('Error logging workout:', error.message);
     res.status(500).json({ error: 'Failed to log workout' });
+  }
+});
+
+// Admin-only route to ban a user
+app.patch('/api/users/:id/ban', authenticate, isAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { data, error } = await supabase.from('users').update({ is_banned: true }).eq('id', id).select();
+
+    if (error) throw error;
+
+    res.status(200).json(data);
+  } catch (error) {
+    console.error('Error banning user:', error.message);
+    res.status(500).json({ error: 'Failed to ban user' });
+  }
+});
+
+// Admin-only route to unban a user
+app.patch('/api/users/:id/unban', authenticate, isAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { data, error } = await supabase.from('users').update({ is_banned: false }).eq('id', id).select();
+
+    if (error) throw error;
+
+    res.status(200).json(data);
+  } catch (error) {
+    console.error('Error unbanning user:', error.message);
+    res.status(500).json({ error: 'Failed to unban user' });
   }
 });
 

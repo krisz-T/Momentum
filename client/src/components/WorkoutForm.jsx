@@ -17,9 +17,11 @@ function WorkoutForm({ session, onWorkoutLogged }) {
       const apiUrl = `${import.meta.env.VITE_API_BASE_URL}/api/workouts`;
       const response = await fetch(apiUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
         body: JSON.stringify({
-          userId: session.user.id, // Use the logged-in user's ID
           type,
           duration: Number(duration), // Ensure duration is sent as a number
         }),

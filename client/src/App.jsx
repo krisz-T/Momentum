@@ -28,6 +28,14 @@ function App() {
         headers: { 'Authorization': `Bearer ${session.access_token}` },
       });
       const profileData = await response.json();
+
+      // If the fetched profile shows the user is banned, log them out immediately.
+      if (profileData && profileData.is_banned) {
+        alert('Your account has been suspended.');
+        await supabase.auth.signOut();
+        return; // Stop further processing
+      }
+
       setUserProfile(profileData);
     } catch (e) {
       console.error("Failed to fetch profile:", e);
