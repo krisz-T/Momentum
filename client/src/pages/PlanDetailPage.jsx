@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { FaArrowLeft, FaPlusCircle, FaCheckCircle, FaCalendarAlt, FaPlayCircle } from 'react-icons/fa';
 
 const PlanDetailPage = () => {
   const { session } = useAuth();
@@ -70,21 +71,24 @@ const PlanDetailPage = () => {
   return (
     <div>
       <div className="page-header">
-        <h1>{plan.title}</h1>
-        <nav><Link to="/plans">Back to All Plans</Link></nav>
+        <h1>{plan.title}</h1> {/* Maybe add an icon here later */}
+        <nav><Link to="/plans" className="icon-link"><FaArrowLeft /> <span>Back to All Plans</span></Link></nav>
       </div>
 
       <p className="page-description">{plan.description}</p>
       {isEnrolled ? (
-        <p className="enrolled-message">✅ You are enrolled in this plan.</p>
+        <p className="enrolled-message"><FaCheckCircle /> You are enrolled in this plan.</p>
       ) : (
-        <button onClick={handleEnroll} disabled={isEnrolling} className="enroll-button">
-          {isEnrolling ? 'Enrolling...' : 'Enroll in this Plan'}
-        </button>
+        <div className="enroll-button-container">
+          <button onClick={handleEnroll} disabled={isEnrolling} className="enroll-button icon-button">
+            <FaPlusCircle />
+            <span>{isEnrolling ? 'Enrolling...' : 'Enroll in this Plan'}</span>
+          </button>
+        </div>
       )}
 
       <div className="workout-schedule">
-        <h3>Workout Schedule</h3>
+        <h3><FaCalendarAlt /> Workout Schedule</h3>
         {plan.plan_workouts.map(workout => (
           <div key={workout.id} className="workout-schedule-item">
             <h4>Day {workout.day_of_plan}: {workout.workout_type}</h4>
@@ -99,8 +103,9 @@ const PlanDetailPage = () => {
                 </li>
               ))}
             </ul>
-            <Link to="/workout-session" state={{ workout }} className="button-link">
-              Start Workout
+            <Link to="/workout-session" state={{ workout }} className="button-link icon-link">
+              <FaPlayCircle />
+              <span>Start Workout</span>
             </Link>
           </div>
         ))}

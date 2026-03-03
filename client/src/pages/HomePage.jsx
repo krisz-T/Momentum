@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import WorkoutForm from '../components/WorkoutForm';
 import { useAuth } from '../contexts/AuthContext';
+import { FaTrophy } from 'react-icons/fa';
 
 const HomePage = () => {
   const { session } = useAuth();
@@ -37,7 +38,7 @@ const HomePage = () => {
     <>
       <WorkoutForm onWorkoutLogged={handleWorkoutLogged} />
       <hr />
-      <h1>Momentum Leaderboard</h1>
+      <h1><FaTrophy /> Momentum Leaderboard</h1>
       {loading && <p>Loading...</p>}
       {error && <p>Error: {error}</p>}
       {!loading && !error && (

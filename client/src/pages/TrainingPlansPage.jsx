@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { FaArrowLeft, FaClipboardList, FaEye } from 'react-icons/fa';
 
 const TrainingPlansPage = () => {
   const [plans, setPlans] = useState([]);
@@ -24,12 +25,13 @@ const TrainingPlansPage = () => {
 
   return (
     <div>
-      <h1>Training Plans</h1>
-      <p>Browse our available plans to kickstart your fitness journey.</p>
-      <nav>
-        <Link to="/">Back to Home</Link>
-      </nav>
-
+      <div className="page-header">
+        <h1><FaClipboardList /> Training Plans</h1>
+        <nav>
+          <Link to="/" className="icon-link"><FaArrowLeft /> <span>Back to Home</span></Link>
+        </nav>
+      </div>
+      <p className="page-description">Browse our available plans to kickstart your fitness journey.</p>
       {loading && <p>Loading plans...</p>}
       {error && <p style={{ color: '#ff6b6b' }}>Error: {error}</p>}
 
@@ -41,8 +43,9 @@ const TrainingPlansPage = () => {
             <span>
               {plan.duration_weeks ? `${plan.duration_weeks} weeks` : 'Ongoing'}
             </span>
-            <Link to={`/plans/${plan.id}`} className="button-link">
-              View Plan
+            <Link to={`/plans/${plan.id}`} className="button-link icon-link">
+              <FaEye />
+              <span>View Plan</span>
             </Link>
           </div>
         ))}

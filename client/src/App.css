@@ -33,6 +33,13 @@
   border: 1px solid #333;
 }
 
+.auth-container h1 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
 .auth-toggle {
   margin-top: 1.5rem;
   font-size: 0.9em;
@@ -60,11 +67,28 @@
   border: 1px solid #333;
 }
 
+.brand-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.5em;
+  font-weight: bold;
+}
+
 .header-left, .header-right {
   display: flex;
   align-items: center;
   gap: 1.5rem;
 }
+
+.icon-link, .icon-button {
+  display: inline-flex; /* Use inline-flex for better vertical alignment within text flows */
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Hide text on smaller screens if desired, just an idea */
+/* @media (max-width: 768px) { .icon-link span, .icon-button span { display: none; } } */
 
 .header-left a {
   font-weight: bold;
@@ -87,6 +111,12 @@ th, td {
   border: 1px solid #333;
   padding: 0.75rem;
   text-align: left;
+}
+
+.action-cell .action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 th {
@@ -171,6 +201,11 @@ hr {
   padding: 0.5rem 1rem;
   font-weight: 500;
 }
+.badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
 
 /* --- Training Plan Styles --- */
 .plans-list {
@@ -237,6 +272,9 @@ hr {
 .enrolled-message {
   font-weight: bold;
   color: #a5d6a7;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .exercise-list {
@@ -294,6 +332,11 @@ hr {
   gap: 1rem;
 }
 
+.large-icon-button {
+  font-size: 1.5em;
+  padding: 0.8em;
+}
+
 .finish-button {
   background-color: #ff6b6b;
   border-color: #ff6b6b;
@@ -328,11 +371,30 @@ hr {
   gap: 2rem;
 }
 
+.content-manage-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.content-manage-header.form-header {
+  margin-bottom: 0;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #444;
+}
+
 .manage-plans-list {
   display: flex;
   flex-direction: column;
   gap: 1rem;
   margin-bottom: 2rem;
+}
+
+.manage-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .manage-plan-item {
@@ -361,13 +423,19 @@ hr {
   margin-left: 0.5rem;
 }
 
+.warning-button {
+  background-color: #8c6a3a;
+  border-color: #8c6a3a;
+}
+
 .delete-button-sm {
   background-color: #5c2e2e;
   border-color: #5c2e2e;
   padding: 0.2em 0.6em;
   font-size: 0.9em;
-  margin-left: auto;
-  margin-right: 1rem;
+}
+.delete-button-sm:hover {
+  border-color: #8c3a3a;
 }
 
 .page-header {
@@ -381,6 +449,9 @@ hr {
 
 .page-header h1 {
   margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem; /* Add spacing between title icon and text */
   font-size: 2.2em;
 }
 

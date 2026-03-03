@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { FaArrowLeft, FaTasks, FaPlus, FaTrash, FaPencilAlt } from 'react-icons/fa';
 
 const ManagePlanPage = () => {
   const { id: planId } = useParams();
@@ -88,19 +89,21 @@ const ManagePlanPage = () => {
   return (
     <div>
       <div className="page-header">
-        <h1>Managing: {plan.title}</h1>
-        <nav><Link to="/admin">Back to Admin Dashboard</Link></nav>
+        <h1><FaPencilAlt /> Managing: {plan.title}</h1>
+        <nav><Link to="/admin" className="icon-link"><FaArrowLeft /> <span>Back to Admin Dashboard</span></Link></nav>
       </div>
 
       <div className="admin-section">
-        <h2>Scheduled Workouts</h2>
+        <h2><FaTasks /> Scheduled Workouts</h2>
         {plan.plan_workouts.length > 0 ? (
           <div className="manage-plans-list">
             {plan.plan_workouts.map(w => (
               <div key={w.id} className="manage-plan-item">
                 <span>Day {w.day_of_plan}: {w.workout_type}</span>
-                <button onClick={() => handleDeleteWorkout(w.id)} className="delete-button-sm">X</button>
-                <Link to={`/admin/workouts/${w.id}`} className="button-link">Manage Exercises</Link>
+                <div className="manage-item-actions">
+                  <Link to={`/admin/workouts/${w.id}`} className="button-link icon-button"><FaPencilAlt /> <span>Manage Exercises</span></Link>
+                  <button onClick={() => handleDeleteWorkout(w.id)} className="delete-button-sm icon-button"><FaTrash /></button>
+                </div>
               </div>
             ))}
           </div>
@@ -109,7 +112,10 @@ const ManagePlanPage = () => {
 
       <div className="admin-section">
         <form onSubmit={handleAddWorkout}>
-          <h3>Add Workout to Plan</h3>
+          <div className="content-manage-header form-header">
+            <h3>Add Workout to Plan</h3>
+            <button type="submit" disabled={submitting} className="icon-button"><FaPlus /> <span>{submitting ? 'Adding...' : 'Add Workout'}</span></button>
+          </div>
           <div>
             <label>Day of Plan</label>
             <input type="number" value={day} onChange={e => setDay(e.target.value)} required min="1" />
@@ -122,7 +128,6 @@ const ManagePlanPage = () => {
             <label>Suggested Duration (minutes)</label>
             <input type="number" value={duration} onChange={e => setDuration(e.target.value)} required min="1" />
           </div>
-          <button type="submit" disabled={submitting}>{submitting ? 'Adding...' : 'Add Workout'}</button>
         </form>
       </div>
     </div>

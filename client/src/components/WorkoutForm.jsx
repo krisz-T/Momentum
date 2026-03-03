@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { FaDumbbell, FaPlusSquare } from 'react-icons/fa';
 
 function WorkoutForm({ onWorkoutLogged }) {
   const { session } = useAuth();
@@ -50,7 +51,7 @@ function WorkoutForm({ onWorkoutLogged }) {
 
   return (
     <form onSubmit={handleSubmit}>
-      <h2>Log a New Workout</h2>
+      <h2><FaDumbbell /> Log a New Workout</h2>
       {error && <p style={{ color: '#ff6b6b' }}>Error: {error}</p>}
       <div>
         <label>Workout Type:</label>
@@ -72,8 +73,9 @@ function WorkoutForm({ onWorkoutLogged }) {
           min="1"
         />
       </div>
-      <button type="submit" disabled={submitting}>
-        {submitting ? 'Logging...' : 'Log Workout'}
+      <button type="submit" disabled={submitting} className="icon-button">
+        <FaPlusSquare />
+        <span>{submitting ? 'Logging...' : 'Log Workout'}</span>
       </button>
     </form>
   );

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../contexts/AuthContext';
+import { FaArrowLeft, FaPencilAlt, FaSave, FaTimes, FaListAlt, FaHistory, FaTrophy, FaPlay, FaAward, FaUser } from 'react-icons/fa';
 
 const MyProfile = () => {
   const { userProfile, session, fetchProfile } = useAuth();
@@ -96,22 +97,22 @@ const MyProfile = () => {
   return (
     <div>
       <div className="page-header">
-        <h1>My Profile</h1>
-        <nav><Link to="/">Back to Home</Link></nav>
+        <h1><FaUser /> My Profile</h1>
+        <nav><Link to="/" className="icon-link"><FaArrowLeft /> <span>Back to Home</span></Link></nav>
       </div>
 
       <div className="profile-details">
         {isEditing ? (
           <form onSubmit={handleUpdateName} className="inline-form">
             <input type="text" value={newName} onChange={(e) => setNewName(e.target.value)} required />
-            <button type="submit">Save</button>
-            <button type="button" onClick={() => setIsEditing(false)}>Cancel</button>
+            <button type="submit" className="icon-button"><FaSave /> <span>Save</span></button>
+            <button type="button" onClick={() => setIsEditing(false)} className="icon-button"><FaTimes /> <span>Cancel</span></button>
             {updateError && <p style={{ color: '#ff6b6b' }}>{updateError}</p>}
           </form>
         ) : (
           <div className="profile-header">
             <h2>{userProfile.name}</h2>
-            <button onClick={() => setIsEditing(true)}>Edit Name</button>
+            <button onClick={() => setIsEditing(true)} className="icon-button"><FaPencilAlt /> <span>Edit Name</span></button>
           </div>
         )}
         <p>Role: {userProfile.role}</p>
@@ -119,7 +120,7 @@ const MyProfile = () => {
       </div>
 
       <div className="admin-section">
-        <h3>My Active Plans</h3>
+        <h3><FaListAlt /> My Active Plans</h3>
         {loading ? (
           <p>Loading plans...</p>
         ) : enrollments.length > 0 ? (
@@ -127,7 +128,7 @@ const MyProfile = () => {
             {enrollments.map(enrollment => (
               <div key={enrollment.id} className="plan-card">
                 <h2>{enrollment.training_plans.title}</h2>
-                <Link to={`/plans/${enrollment.plan_id}`} className="button-link">Continue Plan</Link>
+                <Link to={`/plans/${enrollment.plan_id}`} className="button-link icon-link"><FaPlay /> <span>Continue Plan</span></Link>
               </div>
             ))}
           </div>
@@ -135,7 +136,7 @@ const MyProfile = () => {
       </div>
 
       <div className="admin-section">
-        <h3>Recent Workouts</h3>
+        <h3><FaHistory /> Recent Workouts</h3>
         {loading ? (
           <p>Loading history...</p>
         ) : workouts.length > 0 ? (
@@ -161,14 +162,15 @@ const MyProfile = () => {
       </div>
 
       <div className="badges-section">
-        <h3>My Badges</h3>
+        <h3><FaTrophy /> My Badges</h3>
         {loading ? (
           <p>Loading badges...</p>
         ) : badges.length > 0 ? (
           <ul className="badge-list">
             {badges.map((badge) => (
               <li key={badge.badge_name} className="badge" title={badgeDescriptions[badge.badge_name] || 'An awesome achievement!'}>
-                {badge.badge_name}
+                <FaAward />
+                <span>{badge.badge_name}</span>
               </li>
             ))}
           </ul>

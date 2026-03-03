@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { FaPlus } from 'react-icons/fa';
 
 const CreateExerciseForm = ({ onExerciseCreated }) => {
   const { session } = useAuth();
@@ -65,7 +66,10 @@ const CreateExerciseForm = ({ onExerciseCreated }) => {
         <label>YouTube Embed URL</label>
         <input type="text" value={videoUrl} onChange={handleUrlChange} placeholder="Paste the URL from the 'src' attribute" />
       </div>
-      <button type="submit" disabled={submitting}>{submitting ? 'Creating...' : 'Create Exercise'}</button>
+      <button type="submit" disabled={submitting} className="icon-button">
+        <FaPlus />
+        <span>{submitting ? 'Creating...' : 'Create Exercise'}</span>
+      </button>
     </form>
   );
 };

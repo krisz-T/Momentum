@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { FaPlus } from 'react-icons/fa';
 
 const CreatePlanForm = ({ onPlanCreated }) => {
   const { session } = useAuth();
@@ -57,7 +58,10 @@ const CreatePlanForm = ({ onPlanCreated }) => {
         <label>Duration (weeks)</label>
         <input type="number" value={durationWeeks} onChange={(e) => setDurationWeeks(e.target.value)} placeholder="Leave blank for ongoing" min="1" />
       </div>
-      <button type="submit" disabled={submitting}>{submitting ? 'Creating...' : 'Create Plan'}</button>
+      <button type="submit" disabled={submitting} className="icon-button">
+        <FaPlus />
+        <span>{submitting ? 'Creating...' : 'Create Plan'}</span>
+      </button>
     </form>
   );
 };

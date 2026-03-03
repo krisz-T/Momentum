@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { supabase } from '../supabaseClient';
+import { FaKey, FaSave } from 'react-icons/fa';
 
 export default function ResetPassword({ onPasswordUpdated }) {
   const [password, setPassword] = useState('');
@@ -30,7 +31,7 @@ export default function ResetPassword({ onPasswordUpdated }) {
   return (
     <div className="auth-container">
       <form onSubmit={handleResetPassword}>
-        <h1>Choose a New Password</h1>
+        <h1><FaKey /> Choose a New Password</h1>
         {error && <p style={{ color: '#ff6b6b' }}>{error}</p>}
         {message && <p style={{ color: '#a5d6a7' }}>{message}</p>}
         <div>
@@ -44,8 +45,9 @@ export default function ResetPassword({ onPasswordUpdated }) {
             placeholder="Enter your new password"
           />
         </div>
-        <button type="submit" disabled={loading}>
-          {loading ? 'Updating...' : 'Update Password'}
+        <button type="submit" disabled={loading} className="icon-button">
+          <FaSave />
+          <span>{loading ? 'Updating...' : 'Update Password'}</span>
         </button>
       </form>
     </div>

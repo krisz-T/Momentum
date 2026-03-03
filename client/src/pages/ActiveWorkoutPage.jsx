@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { FaPlay, FaPause, FaStepForward, FaStopCircle } from 'react-icons/fa';
 
 const ActiveWorkoutPage = () => {
   const location = useLocation();
@@ -93,17 +94,19 @@ const ActiveWorkoutPage = () => {
       </div>
 
       <div className="workout-controls">
-        <button onClick={() => setIsPaused(!isPaused)}>
-          {isPaused ? 'Resume' : 'Pause'}
+        <button onClick={() => setIsPaused(!isPaused)} className="icon-button large-icon-button">
+          {isPaused ? <FaPlay /> : <FaPause />}
         </button>
         <button
           onClick={() => setCurrentExerciseIndex(prev => prev + 1)}
           disabled={currentExerciseIndex >= workout.workout_exercises.length - 1}
+          className="icon-button large-icon-button"
         >
-          Next Exercise
+          <FaStepForward />
         </button>
-        <button onClick={handleFinishWorkout} className="finish-button">
-          Finish Workout
+        <button onClick={handleFinishWorkout} className="finish-button icon-button">
+          <FaStopCircle />
+          <span>Finish Workout</span>
         </button>
       </div>
     </div>

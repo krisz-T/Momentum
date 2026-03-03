@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import Modal from '../components/Modal';
+import { FaArrowLeft, FaPencilAlt, FaClipboardList, FaTrash, FaPlus, FaPlusCircle, FaDumbbell } from 'react-icons/fa';
 import CreateExerciseForm from '../components/CreateExerciseForm';
 
 const ManageWorkoutPage = () => {
@@ -119,18 +120,18 @@ const ManageWorkoutPage = () => {
   return (
     <div>
       <div className="page-header">
-        <h1>Managing: {workout?.workout_type}</h1>
-        <nav><Link to={`/admin/plans/${workout?.plan_id}`}>Back to Plan</Link></nav>
+        <h1><FaPencilAlt /> Managing: {workout?.workout_type}</h1>
+        <nav><Link to={`/admin/plans/${workout?.plan_id}`} className="icon-link"><FaArrowLeft /> <span>Back to Plan</span></Link></nav>
       </div>
 
       <div className="admin-section">
-        <h2>Assigned Exercises</h2>
+        <h2><FaClipboardList /> Assigned Exercises</h2>
         {workout?.workout_exercises.length > 0 ? (
           <div className="manage-plans-list">
             {workout.workout_exercises.map(we => (
               <div key={we.id} className="manage-plan-item">
                 <span>{we.exercises.name} ({we.sets}x{we.reps || `${we.duration_seconds}s`})</span>
-                <button onClick={() => handleRemoveExercise(we.id)} className="delete-button-sm">Remove</button>
+                <button onClick={() => handleRemoveExercise(we.id)} className="delete-button-sm icon-button"><FaTrash /></button>
               </div>
             ))}
           </div>
@@ -139,14 +140,17 @@ const ManageWorkoutPage = () => {
 
       <div className="admin-section">
         <form onSubmit={handleAddExercise}>
-          <h3>Assign Exercise to Workout</h3>
+          <div className="content-manage-header form-header">
+            <h3>Assign Exercise to Workout</h3>
+            <button type="submit" disabled={submitting} className="icon-button"><FaPlusCircle /> <span>{submitting ? 'Assigning...' : 'Assign Exercise'}</span></button>
+          </div>
           <div>
             <label>Exercise</label>
             <div className="form-group-inline">
               <select value={selectedExercise} onChange={e => setSelectedExercise(e.target.value)}>
                 {allExercises.map(ex => <option key={ex.id} value={ex.id}>{ex.name}</option>)}
               </select>
-              <button type="button" onClick={() => setIsCreateModalOpen(true)}>Create New</button>
+              <button type="button" onClick={() => setIsCreateModalOpen(true)} className="icon-button"><FaPlus /> <span>Create New</span></button>
             </div>
           </div>
           <div>
@@ -171,11 +175,10 @@ const ManageWorkoutPage = () => {
               <input type="number" value={duration} onChange={e => setDuration(e.target.value)} required min="1" />
             </div>
           )}
-          <button type="submit" disabled={submitting}>{submitting ? 'Assigning...' : 'Assign Exercise'}</button>
         </form>
       </div>
 
-      <Modal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} title="Create New Exercise">
+      <Modal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} title="Create New Exercise" icon={FaDumbbell}>
         <CreateExerciseForm onExerciseCreated={async (newExercise) => {
           await fetchAllExercises();
           if (newExercise) {

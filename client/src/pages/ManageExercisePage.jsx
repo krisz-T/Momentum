@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { FaPencilAlt, FaArrowLeft, FaSave } from 'react-icons/fa';
 
 const ManageExercisePage = () => {
   const { id: exerciseId } = useParams();
@@ -82,10 +83,11 @@ const ManageExercisePage = () => {
 
   return (
     <div>
-      <nav><Link to="/admin">Back to Admin Dashboard</Link></nav>
-      <h1>Editing: {exercise?.name}</h1>
+      <div className="page-header">
+        <h1><FaPencilAlt /> Editing: {exercise?.name}</h1>
+        <nav><Link to="/admin" className="icon-link"><FaArrowLeft /> <span>Back to Admin Dashboard</span></Link></nav>
+      </div>
       <form onSubmit={handleUpdate}>
-        <h3>Update Exercise Details</h3>
         {error && <p style={{ color: '#ff6b6b' }}>{error}</p>}
         <div>
           <label>Exercise Name</label>
@@ -99,7 +101,10 @@ const ManageExercisePage = () => {
           <label>YouTube Embed URL</label>
           <input type="text" value={videoUrl} onChange={handleUrlChange} placeholder="Paste the URL from the 'src' attribute" />
         </div>
-        <button type="submit" disabled={submitting}>{submitting ? 'Updating...' : 'Update Exercise'}</button>
+        <button type="submit" disabled={submitting} className="icon-button">
+          <FaSave />
+          <span>{submitting ? 'Updating...' : 'Update Exercise'}</span>
+        </button>
       </form>
     </div>
   );

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { FaUsers, FaBoxOpen, FaPlus, FaTrash, FaPencilAlt, FaBan, FaCheck, FaArrowLeft, FaTachometerAlt, FaDumbbell, FaClipboardList } from 'react-icons/fa';
 import CreateExerciseForm from '../components/CreateExerciseForm';
 import CreatePlanForm from '../components/CreatePlanForm';
 import Modal from '../components/Modal';
@@ -172,11 +173,13 @@ const AdminDashboard = () => {
   return (
     <div>
       <div className="page-header">
-        <h1>Admin Dashboard</h1>
-        <nav><Link to="/">Back to Home</Link></nav>
+        <h1><FaTachometerAlt /> Admin Dashboard</h1>
+        <nav>
+          <Link to="/" className="icon-link"><FaArrowLeft /> <span>Back to Home</span></Link>
+        </nav>
       </div>
       <div className="admin-section">
-        <h2>User Management</h2>
+        <h2><FaUsers /> User Management</h2>
         {error && <p style={{ color: '#ff6b6b' }}>Error: {error}</p>}
         <table>
           <thead>
@@ -191,13 +194,15 @@ const AdminDashboard = () => {
               <tr key={user.id}>
                 <td>{user.name}</td>
                 <td>{user.is_banned ? 'Banned' : 'Active'}</td>
-                <td>
-                  {user.is_banned ? (
-                    <button onClick={() => handleUnbanUser(user.id)}>Unban</button>
-                  ) : (
-                    <button onClick={() => handleBanUser(user.id)}>Ban</button>
-                  )}
-                  <button onClick={() => handleDeleteUser(user.id)} className="delete-button">Delete</button>
+                <td className="action-cell">
+                  <div className="action-buttons">
+                    {user.is_banned ? (
+                      <button onClick={() => handleUnbanUser(user.id)} className="icon-button"><FaCheck /> <span>Unban</span></button>
+                    ) : (
+                      <button onClick={() => handleBanUser(user.id)} className="icon-button warning-button"><FaBan /> <span>Ban</span></button>
+                    )}
+                    <button onClick={() => handleDeleteUser(user.id)} className="delete-button icon-button"><FaTrash /> <span>Delete</span></button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -205,30 +210,38 @@ const AdminDashboard = () => {
         </table>
       </div>
       <div className="admin-section">
-        <h2>Content Management</h2>
+        <h2><FaBoxOpen /> Content Management</h2>
         <div className="admin-forms-container">
           <div>
-            <h3>Existing Exercises</h3>
-            <button onClick={() => setIsExerciseModalOpen(true)}>Create New Exercise</button>
+            <div className="content-manage-header">
+              <h3>Existing Exercises</h3>
+              <button onClick={() => setIsExerciseModalOpen(true)} className="icon-button"><FaPlus /> <span>Create New Exercise</span></button>
+            </div>
             <div className="manage-plans-list">
               {exercises.map(ex => (
                 <div key={ex.id} className="manage-plan-item">
                   <span>{ex.name}</span>
-                  <button onClick={() => handleDeleteExercise(ex.id)} className="delete-button-sm">X</button>
-                  <Link to={`/admin/exercises/${ex.id}`} className="button-link">Manage</Link>
+                  <div className="manage-item-actions">
+                    <Link to={`/admin/exercises/${ex.id}`} className="button-link icon-button"><FaPencilAlt /> <span>Manage</span></Link>
+                    <button onClick={() => handleDeleteExercise(ex.id)} className="delete-button-sm icon-button"><FaTrash /></button>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
           <div>
-            <h3>Existing Plans</h3>
-            <button onClick={() => setIsPlanModalOpen(true)}>Create New Plan</button>
+            <div className="content-manage-header">
+              <h3>Existing Plans</h3>
+              <button onClick={() => setIsPlanModalOpen(true)} className="icon-button"><FaPlus /> <span>Create New Plan</span></button>
+            </div>
             <div className="manage-plans-list">
               {plans.map(plan => (
                 <div key={plan.id} className="manage-plan-item">
                   <span>{plan.title}</span>
-                  <button onClick={() => handleDeletePlan(plan.id)} className="delete-button-sm">X</button>
-                  <Link to={`/admin/plans/${plan.id}`} className="button-link">Manage</Link>
+                  <div className="manage-item-actions">
+                    <Link to={`/admin/plans/${plan.id}`} className="button-link icon-button"><FaPencilAlt /> <span>Manage</span></Link>
+                    <button onClick={() => handleDeletePlan(plan.id)} className="delete-button-sm icon-button"><FaTrash /></button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -236,14 +249,14 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      <Modal isOpen={isExerciseModalOpen} onClose={() => setIsExerciseModalOpen(false)} title="Create New Exercise">
+      <Modal isOpen={isExerciseModalOpen} onClose={() => setIsExerciseModalOpen(false)} title="Create New Exercise" icon={FaDumbbell}>
         <CreateExerciseForm onExerciseCreated={() => {
           fetchExercises();
           setIsExerciseModalOpen(false);
         }} />
       </Modal>
 
-      <Modal isOpen={isPlanModalOpen} onClose={() => setIsPlanModalOpen(false)} title="Create New Training Plan">
+      <Modal isOpen={isPlanModalOpen} onClose={() => setIsPlanModalOpen(false)} title="Create New Training Plan" icon={FaClipboardList}>
         <CreatePlanForm onPlanCreated={() => {
           fetchPlans();
           setIsPlanModalOpen(false);

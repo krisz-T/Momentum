@@ -15,6 +15,7 @@ import TrainingPlansPage from './pages/TrainingPlansPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import Header from './components/Header';
 import { useAuth } from './contexts/AuthContext';
+import { FaDumbbell } from 'react-icons/fa';
 
 function App() {
   const { session, isPasswordRecovery, onPasswordUpdated } = useAuth();
@@ -25,7 +26,10 @@ function App() {
         <ResetPassword onPasswordUpdated={onPasswordUpdated} />
       ) : !session ? (
         <div className="auth-page-wrapper">
-          <h1 className="brand-title">Momentum</h1>
+          <h1 className="brand-title">
+            <FaDumbbell style={{ marginRight: '10px', verticalAlign: 'middle' }} />
+            Momentum
+          </h1>
           <Auth />
         </div>
       ) : (
