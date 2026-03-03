@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect, useContext } from 'react';
+import { createContext, useState, useEffect, useContext, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
 
 const AuthContext = createContext();
@@ -64,10 +64,37 @@ export const AuthProvider = ({ children }) => {
     return () => subscription.unsubscribe();
   }, []);
 
+  const fetchProfile = useCallback(async () => {
+    if (!session) return;
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/profile`, {
+        headers: { 'Authorization': `Bearer ${session.access_token}` },
+      });
+
+      if (!response.ok) {
+        await supabase.auth.signOut();
+        return;
+      }
+
+      const profileData = await response.json();
+
+      if (!profileData || !profileData.id || profileData.is_banned) {
+        if (profileData.is_banned) alert('Your account has been suspended.');
+        await supabase.auth.signOut();
+        return;
+      }
+
+      setUserProfile(profileData);
+    } catch (e) {
+      console.error("Error during profile fetch, signing out:", e);
+      await supabase.auth.signOut();
+    }
+  }, [session]);
+
   // Expose a function to allow child components to reset the recovery state
   const onPasswordUpdated = () => setIsPasswordRecovery(false);
 
-  const value = { session, userProfile, loading, isPasswordRecovery, onPasswordUpdated };
+  const value = { session, userProfile, loading, isPasswordRecovery, onPasswordUpdated, fetchProfile };
 
   return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
 };
