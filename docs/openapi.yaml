@@ -1,0 +1,138 @@
+openapi: 3.0.0
+info:
+  title: "Momentum API"
+  version: "1.0.0"
+  description: "The REST API for the Momentum workout tracker application. It serves as the business logic tier, handling user data, gamification, and content management."
+
+servers:
+  - url: "https://momentum-api.onrender.com"
+    description: "Production Server"
+  - url: "http://localhost:3001"
+    description: "Local Development Server"
+
+tags:
+  - name: "Public"
+    description: "Endpoints accessible to anyone."
+  - name: "Profile"
+    description: "Endpoints for managing the currently authenticated user's profile."
+  - name: "Admin"
+    description: "Admin-only endpoints for managing users and content."
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: "The user's unique identifier."
+        name:
+          type: string
+          description: "The user's display name."
+        total_xp:
+          type: integer
+          description: "The user's total experience points."
+        is_banned:
+          type: boolean
+          description: "Indicates if the user is banned."
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: "A description of the error."
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: "JWT token obtained from Supabase upon login."
+
+paths:
+  /api/leaderboard:
+    get:
+      tags:
+        - "Public"
+      summary: "Get the global leaderboard"
+      description: "Fetches the top 10 non-banned users, ordered by total XP."
+      responses:
+        '200':
+          description: "A list of users for the leaderboard."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '500':
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/profile:
+    get:
+      tags:
+        - "Profile"
+      summary: "Get current user's profile"
+      description: "Fetches the complete profile for the currently authenticated user."
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: "The user's full profile object."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: "Unauthorized. No valid token provided."
+        '500':
+          description: "Internal Server Error"
+
+    patch:
+      tags:
+        - "Profile"
+      summary: "Update current user's profile"
+      description: "Updates the name of the currently authenticated user."
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "NewUsername"
+              required:
+                - name
+      responses:
+        '200':
+          description: "The updated user profile object."
+        '400':
+          description: "Bad Request. Name is required."
+        '401':
+          description: "Unauthorized."
+        '409':
+          description: "Conflict. The username is already taken."
+
+  /api/users:
+    get:
+      tags:
+        - "Admin"
+      summary: "Get all users"
+      description: "Fetches a list of all users in the system. Requires Admin privileges."
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: "A list of all users."
+        '401':
+          description: "Unauthorized. No valid token provided."
+        '403':
+          description: "Forbidden. Admin access required."
